@@ -2,24 +2,26 @@
 
 import Image from "next/image";
 
+interface GalleryImage {
+    src: string;
+    location: string;
+    date: string;
+}
+
 interface InfiniteMarqueeProps {
     direction?: "left" | "right";
     speed?: number;
-    images?: string[];
+    images: GalleryImage[];
+    onImageClick: (image: GalleryImage) => void;
+    isPaused?: boolean;
 }
-
-const defaultImages = [
-    "/images/abstract/abstract_1.png",
-    "/images/abstract/abstract_2.png",
-    "/images/abstract/abstract_3.png",
-    "/images/abstract/abstract_4.png",
-    "/images/abstract/abstract_5.png",
-];
 
 export default function InfiniteMarquee({
     direction = "left",
     speed = 40,
-    images = defaultImages
+    images,
+    onImageClick,
+    isPaused = false
 }: InfiniteMarqueeProps) {
     // Triple the images to ensure seamless loop
     const marqueeImages = [...images, ...images, ...images];
@@ -27,18 +29,20 @@ export default function InfiniteMarquee({
     return (
         <div className="relative w-full overflow-hidden py-4 select-none">
             <div
-                className={`flex w-max hover:[animation-play-state:paused] ${direction === "left" ? "animate-infinite-scroll-left" : "animate-infinite-scroll-right"
+                className={`flex w-max hover:[animation-play-state:paused] ${isPaused ? "[animation-play-state:paused]" : ""
+                    } ${direction === "left" ? "animate-infinite-scroll-left" : "animate-infinite-scroll-right"
                     }`}
                 style={{ animationDuration: `${speed}s` }}
             >
-                {marqueeImages.map((src, i) => (
+                {marqueeImages.map((img, i) => (
                     <div
                         key={i}
+                        onClick={() => onImageClick(img)}
                         className="relative w-[380px] h-[240px] mx-8 rounded-2xl overflow-hidden glass hover:scale-[1.05] transition-all duration-700 cursor-pointer group"
                     >
                         <Image
-                            src={src}
-                            alt={`Gallery Image ${i}`}
+                            src={img.src}
+                            alt={`${img.location} - ${img.date}`}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
