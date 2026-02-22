@@ -21,6 +21,10 @@
   padding: 0;
 }
 
+body.no-scroll {
+  overflow: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import InfiniteMarquee from "./components/InfiniteMarquee";
 import Lightbox from "./components/Lightbox";
+import PageLoader from "./components/PageLoader";
 
 interface GalleryImage {
     src: string;
@@ -17,12 +19,18 @@ interface HomeClientProps {
 export default function HomeClient({ allImages }: HomeClientProps) {
     const [setsCount, setSetsCount] = useState(1);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
     const observerTarget = useRef(null);
 
     // Split images into two sets for the marquee effect
     const midPoint = Math.ceil(allImages.length / 2);
     const set1Images = allImages.slice(0, midPoint);
     const set2Images = allImages.slice(midPoint);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsInitialLoad(false), 3500);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         const reveals = document.querySelectorAll(".reveal");
@@ -39,15 +47,15 @@ export default function HomeClient({ allImages }: HomeClientProps) {
 
         reveals.forEach((reveal) => observer.observe(reveal));
         return () => observer.disconnect();
-    }, [setsCount]);
+    }, [setsCount, isInitialLoad]);
 
     const loadMore = useCallback(
         (entries: IntersectionObserverEntry[]) => {
-            if (entries[0].isIntersecting) {
+            if (entries[0].isIntersecting && !isInitialLoad) {
                 setSetsCount((prev) => prev + 1);
             }
         },
-        []
+        [isInitialLoad]
     );
 
     useEffect(() => {
@@ -65,65 +73,102 @@ export default function HomeClient({ allImages }: HomeClientProps) {
 
     return (
         <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden">
-            {/* Header Section */}
-            <header className={`fixed top-0 left-0 w-full z-50 py-12 px-8 flex justify-center items-center mix-blend-difference pointer-events-none transition-all duration-1000 ${selectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                }`}>
-                <h1 className="text-8xl md:text-9xl font-black tracking-tighter uppercase reveal">
-                    clicks
-                </h1>
-            </header>
+            <PageLoader />
 
-            {/* Marquee Streams Section */}
-            <section className={`pt-64 pb-32 space-y-12 transition-all duration-[1000ms] ease-in-out ${selectedImage ? "opacity-20 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"
-                }`}>
-                {Array.from({ length: setsCount }).map((_, i) => (
-                    <div key={`set-${i}`} className="space-y-12">
-                        <div className="reveal" style={{ transitionDelay: '100ms' }}>
-                            <InfiniteMarquee
-                                direction={i % 2 === 0 ? "left" : "right"}
-                                speed={30 + i}
-                                images={i % 2 === 0 ? set1Images : set2Images}
-                                onImageClick={setSelectedImage}
-                                isPaused={!!selectedImage}
-                            />
-                        </div>
-                        <div className="reveal" style={{ transitionDelay: '300ms' }}>
-                            <InfiniteMarquee
-                                direction={i % 2 === 0 ? "right" : "left"}
-                                speed={35 - i}
-                                images={i % 2 === 0 ? set2Images : set1Images}
-                                onImageClick={setSelectedImage}
-                                isPaused={!!selectedImage}
-                            />
-                        </div>
-                        <div className="reveal" style={{ transitionDelay: '500ms' }}>
-                            <InfiniteMarquee
-                                direction={i % 2 === 0 ? "left" : "right"}
-                                speed={25 + i * 2}
-                                images={i % 2 === 0 ? set1Images : set2Images}
-                                onImageClick={setSelectedImage}
-                                isPaused={!!selectedImage}
-                            />
-                        </div>
-                    </div>
-                ))}
+            <AnimatePresence>
+                {!isInitialLoad && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                        {/* Header Section */}
+                        <header className={`fixed top-0 left-0 w-full z-50 py-12 px-8 flex justify-center items-center mix-blend-difference pointer-events-none transition-all duration-1000 ${selectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                            }`}>
+                            <motion.h1
+                                initial={{ y: "20vh", opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{
+                                    duration: 1.2,
+                                    delay: 0, // Start immediately on mount
+                                    ease: [0.76, 0, 0.24, 1]
+                                }}
+                                className="text-8xl md:text-9xl font-black tracking-tighter uppercase"
+                            >
+                                clicks
+                            </motion.h1>
+                        </header>
 
-                {/* Intersection Trigger */}
-                <div ref={observerTarget} className="h-20 w-full flex justify-center items-center">
-                    <div className="w-1 h-1 bg-white/20 rounded-full animate-ping" />
-                </div>
-            </section>
+                        {/* Marquee Streams Section */}
+                        <section className={`pt-64 pb-32 space-y-12 transition-all duration-[1000ms] ease-in-out ${selectedImage ? "opacity-20 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"
+                            }`}>
+                            {Array.from({ length: setsCount }).map((_, i) => (
+                                <motion.div
+                                    key={`set-${i}`}
+                                    initial={{
+                                        opacity: 0,
+                                        x: i % 2 === 0 ? "100%" : "-100%"
+                                    }}
+                                    animate={{
+                                        opacity: 1,
+                                        x: 0
+                                    }}
+                                    transition={{
+                                        duration: 1.5,
+                                        delay: 1.5 + (i * 0.3), // Wait for header to settle
+                                        ease: [0.22, 1, 0.36, 1]
+                                    }}
+                                    className="space-y-12"
+                                >
+                                    <div className="reveal" style={{ transitionDelay: '100ms' }}>
+                                        <InfiniteMarquee
+                                            direction={i % 2 === 0 ? "left" : "right"}
+                                            speed={30 + i}
+                                            images={i % 2 === 0 ? set1Images : set2Images}
+                                            onImageClick={setSelectedImage}
+                                            isPaused={!!selectedImage}
+                                        />
+                                    </div>
+                                    <div className="reveal" style={{ transitionDelay: '300ms' }}>
+                                        <InfiniteMarquee
+                                            direction={i % 2 === 0 ? "right" : "left"}
+                                            speed={35 - i}
+                                            images={i % 2 === 0 ? set2Images : set1Images}
+                                            onImageClick={setSelectedImage}
+                                            isPaused={!!selectedImage}
+                                        />
+                                    </div>
+                                    <div className="reveal" style={{ transitionDelay: '500ms' }}>
+                                        <InfiniteMarquee
+                                            direction={i % 2 === 0 ? "left" : "right"}
+                                            speed={25 + i * 2}
+                                            images={i % 2 === 0 ? set1Images : set2Images}
+                                            onImageClick={setSelectedImage}
+                                            isPaused={!!selectedImage}
+                                        />
+                                    </div>
+                                </motion.div>
+                            ))}
 
-            {/* Lightbox Popup */}
-            <Lightbox
-                image={selectedImage}
-                onClose={() => setSelectedImage(null)}
-            />
+                            {/* Intersection Trigger */}
+                            <div ref={observerTarget} className="h-20 w-full flex justify-center items-center">
+                                <div className="w-1 h-1 bg-white/20 rounded-full animate-ping" />
+                            </div>
+                        </section>
 
-            {/* Footer */}
-            <footer className="py-24 border-t border-white/5 text-center text-zinc-600 text-[10px] tracking-[0.3em] uppercase">
-                &copy; {new Date().getFullYear()} Clicks Gallery &bull; Minimal Immersive Experience
-            </footer>
+                        {/* Lightbox Popup */}
+                        <Lightbox
+                            image={selectedImage}
+                            onClose={() => setSelectedImage(null)}
+                        />
+
+                        {/* Footer */}
+                        <footer className="py-24 border-t border-white/5 text-center text-zinc-600 text-[10px] tracking-[0.3em] uppercase">
+                            &copy; {new Date().getFullYear()} Clicks Gallery &bull; Minimal Immersive Experience
+                        </footer>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }
