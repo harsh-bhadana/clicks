@@ -5,8 +5,6 @@ import Image from "next/image";
 
 interface GalleryImage {
     src: string;
-    location: string;
-    date: string;
 }
 
 interface LightboxProps {
@@ -54,34 +52,14 @@ export default function Lightbox({ image, onClose }: LightboxProps) {
             {/* Image Container */}
             <div className={`relative w-full max-w-6xl h-full flex flex-col items-center justify-center transition-all duration-700 delay-100 ${isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-10"
                 }`}>
-                <div className="relative w-full h-full max-h-[80vh] rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl">
+                <div className="relative w-full h-full max-h-[85vh] rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl">
                     <Image
                         src={image.src}
-                        alt={image.location}
+                        alt="Photography Gallery Image"
                         fill
                         className="object-contain p-2"
                         priority
                     />
-                </div>
-
-                {/* Quick Info Bar */}
-                <div className={`mt-8 w-full flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                    }`}>
-                    <div className="flex flex-col items-center md:items-start">
-                        <span className="text-zinc-500 text-[10px] uppercase tracking-widest mb-1">Location</span>
-                        <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">
-                            {image.location}
-                        </h3>
-                    </div>
-
-                    <div className="h-px w-12 bg-white/10 hidden md:block" />
-
-                    <div className="flex flex-col items-center md:items-end">
-                        <span className="text-zinc-500 text-[10px] uppercase tracking-widest mb-1">Date Captured</span>
-                        <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-purple-400">
-                            {image.date}
-                        </h3>
-                    </div>
                 </div>
             </div>
 

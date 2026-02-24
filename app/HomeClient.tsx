@@ -8,8 +8,6 @@ import PageLoader from "./components/PageLoader";
 
 interface GalleryImage {
     src: string;
-    location: string;
-    date: string;
 }
 
 interface HomeClientProps {
@@ -20,6 +18,7 @@ export default function HomeClient({ allImages }: HomeClientProps) {
     const [setsCount, setSetsCount] = useState(1);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [isHeaderCentered, setIsHeaderCentered] = useState(true);
     const observerTarget = useRef(null);
 
     // Split images into two sets for the marquee effect
@@ -28,7 +27,13 @@ export default function HomeClient({ allImages }: HomeClientProps) {
     const set2Images = allImages.slice(midPoint);
 
     useEffect(() => {
-        const timer = setTimeout(() => setIsInitialLoad(false), 3500);
+        const timer = setTimeout(() => {
+            setIsInitialLoad(false);
+            // After initial load is done, wait 2 seconds then move header to top
+            setTimeout(() => {
+                setIsHeaderCentered(false);
+            }, 2000);
+        }, 3500);
         return () => clearTimeout(timer);
     }, []);
 
@@ -83,17 +88,21 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
                         {/* Header Section */}
-                        <header className={`fixed top-0 left-0 w-full z-50 py-12 px-8 flex justify-center items-center mix-blend-difference pointer-events-none transition-all duration-1000 ${selectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                            }`}>
+                        <header className={`fixed top-0 left-0 w-full z-50 px-8 mix-blend-difference pointer-events-none transition-all duration-[1500ms] cubic-bezier(0.76, 0, 0.24, 1) flex justify-center items-center ${isHeaderCentered ? "h-screen py-12" : "h-64 py-12"
+                            } ${selectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}>
                             <motion.h1
-                                initial={{ y: "20vh", opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{
+                                    opacity: 1,
+                                    scale: 1,
+                                    y: 0
+                                }}
                                 transition={{
                                     duration: 1.2,
-                                    delay: 0, // Start immediately on mount
+                                    delay: 0,
                                     ease: [0.76, 0, 0.24, 1]
                                 }}
-                                className="text-8xl md:text-9xl font-black tracking-tighter uppercase"
+                                className="text-8xl md:text-9xl font-black tracking-tighter uppercase origin-center"
                             >
                                 clicks
                             </motion.h1>
@@ -115,7 +124,7 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                                     }}
                                     transition={{
                                         duration: 1.5,
-                                        delay: 1.5 + (i * 0.3), // Wait for header to settle
+                                        delay: 0.8 + (i * 0.2), // Start revealing earlier
                                         ease: [0.22, 1, 0.36, 1]
                                     }}
                                     className="space-y-12"

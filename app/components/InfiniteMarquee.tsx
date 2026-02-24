@@ -4,8 +4,6 @@ import Image from "next/image";
 
 interface GalleryImage {
     src: string;
-    location: string;
-    date: string;
 }
 
 interface InfiniteMarqueeProps {
@@ -42,7 +40,7 @@ export default function InfiniteMarquee({
                     >
                         <Image
                             src={img.src}
-                            alt={`${img.location} - ${img.date}`}
+                            alt="Photography Gallery Image"
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
