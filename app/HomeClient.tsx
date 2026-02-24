@@ -8,8 +8,6 @@ import PageLoader from "./components/PageLoader";
 
 interface GalleryImage {
     src: string;
-    location: string;
-    date: string;
 }
 
 interface HomeClientProps {
