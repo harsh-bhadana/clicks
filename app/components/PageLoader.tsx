@@ -26,16 +26,16 @@ export default function PageLoader() {
                     initial={{ opacity: 1 }}
                     exit={{
                         opacity: 0,
-                        transition: { duration: 1, ease: "easeInOut" }
+                        transition: { duration: 1.2, ease: "easeInOut" }
                     }}
                     className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
                 >
                     <motion.div
                         initial={{ y: 0 }}
                         exit={{
-                            y: "-20vh",
                             opacity: 0,
-                            transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] }
+                            scale: 1.1,
+                            transition: { duration: 1.2, ease: [0.76, 0, 0.24, 1] }
                         }}
                         className="flex overflow-hidden"
                     >
