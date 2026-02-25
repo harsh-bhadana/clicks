@@ -48,15 +48,18 @@ export default function Lightbox({ image, onClose }: LightboxProps) {
             </button>
 
             {/* Image Container */}
-            <div className={`relative w-full max-w-6xl h-full flex flex-col items-center justify-center transition-all duration-700 delay-100 ${isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-10"
+            <div className={`relative z-10 max-w-[90vw] max-h-[85vh] transition-all duration-700 delay-100 ${isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-10"
                 }`}>
-                <div className="relative w-full h-full max-h-[85vh] rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl">
+                <div className="relative rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl flex items-center justify-center">
                     <Image
                         src={image.src}
                         alt="Photography Gallery Image"
-                        fill
-                        className="object-contain p-2"
+                        width={1600}
+                        height={900}
+                        sizes="90vw"
+                        className="w-auto h-auto max-w-full max-h-[85vh] object-contain p-2"
                         priority
+                        quality={95}
                     />
                 </div>
             </div>

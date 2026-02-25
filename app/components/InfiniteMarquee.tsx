@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 
 import { GalleryImage } from "../types";
@@ -21,6 +22,7 @@ export default function InfiniteMarquee({
 }: InfiniteMarqueeProps) {
     // Triple the images to ensure seamless loop
     const marqueeImages = [...images, ...images, ...images];
+    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
 
     return (
         <div className="relative w-full overflow-hidden py-4 select-none">
@@ -34,13 +36,26 @@ export default function InfiniteMarquee({
                     <div
                         key={i}
                         onClick={() => onImageClick(img)}
-                        className="relative w-[380px] h-[240px] mx-8 rounded-2xl overflow-hidden glass hover:scale-[1.05] transition-all duration-700 cursor-pointer group"
+                        className="relative h-[280px] mx-6 rounded-2xl overflow-hidden glass hover:scale-[1.05] transition-all duration-700 cursor-pointer group"
+                        style={{
+                            aspectRatio: aspectRatios[i] || '16/9',
+                            width: 'auto'
+                        }}
                     >
                         <Image
                             src={img.src}
                             alt="Photography Gallery Image"
                             fill
+                            sizes="(max-width: 768px) 400px, 600px"
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            quality={75}
+                            onLoad={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                setAspectRatios(prev => ({
+                                    ...prev,
+                                    [i]: target.naturalWidth / target.naturalHeight
+                                }));
+                            }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     </div>
