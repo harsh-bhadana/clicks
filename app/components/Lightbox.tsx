@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-interface GalleryImage {
-    src: string;
-}
+import { GalleryImage } from "../types";
 
 interface LightboxProps {
     image: GalleryImage | null;
