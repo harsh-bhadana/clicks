@@ -6,9 +6,7 @@ import InfiniteMarquee from "./components/InfiniteMarquee";
 import Lightbox from "./components/Lightbox";
 import PageLoader from "./components/PageLoader";
 
-interface GalleryImage {
-    src: string;
-}
+import { GalleryImage } from "./types";
 
 interface HomeClientProps {
     allImages: GalleryImage[];

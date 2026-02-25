@@ -1,9 +1,7 @@
 import { list } from "@vercel/blob";
 import HomeClient from "./HomeClient";
 
-interface GalleryImage {
-  src: string;
-}
+import { GalleryImage } from "./types";
 
 export const revalidate = 60; // Revalidate every minute
 

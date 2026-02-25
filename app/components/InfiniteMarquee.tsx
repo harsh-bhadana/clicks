@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 
-interface GalleryImage {
-    src: string;
-}
+import { GalleryImage } from "../types";
 
 interface InfiniteMarqueeProps {
     direction?: "left" | "right";
