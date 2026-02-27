@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import InfiniteMarquee from "./components/InfiniteMarquee";
 import Lightbox from "./components/Lightbox";
 import PageLoader from "./components/PageLoader";
+import UploadButton from "./components/UploadButton";
 
 import { GalleryImage } from "./types";
 
@@ -168,6 +169,9 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                             image={selectedImage}
                             onClose={() => setSelectedImage(null)}
                         />
+
+                        {/* Image Upload Button */}
+                        <UploadButton />
 
                         {/* Footer */}
                         <footer className="py-24 border-t border-white/5 text-center text-zinc-600 text-[10px] tracking-[0.3em] uppercase">
