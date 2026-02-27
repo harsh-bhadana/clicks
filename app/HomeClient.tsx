@@ -107,25 +107,25 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                         </header>
 
                         {/* Marquee Streams Section */}
-                        <section className={`pt-64 pb-32 space-y-12 transition-all duration-[1000ms] ease-in-out ${selectedImage ? "opacity-20 blur-sm scale-[0.98]" : "opacity-100 blur-0 scale-100"
+                        <section className={`pt-72 pb-48 space-y-24 transition-all duration-[1500ms] ease-in-out ${selectedImage ? "opacity-20 blur-md scale-[0.95]" : "opacity-100 blur-0 scale-100"
                             }`}>
                             {Array.from({ length: setsCount }).map((_, i) => (
                                 <motion.div
                                     key={`set-${i}`}
                                     initial={{
                                         opacity: 0,
-                                        x: i % 2 === 0 ? "100%" : "-100%"
+                                        y: 50
                                     }}
                                     animate={{
                                         opacity: 1,
-                                        x: 0
+                                        y: 0
                                     }}
                                     transition={{
-                                        duration: 1.5,
-                                        delay: 0.8 + (i * 0.2), // Start revealing earlier
+                                        duration: 2,
+                                        delay: 0.5 + (i * 0.3),
                                         ease: [0.22, 1, 0.36, 1]
                                     }}
-                                    className="space-y-12"
+                                    className="space-y-24"
                                 >
                                     <div className="reveal" style={{ transitionDelay: '100ms' }}>
                                         <InfiniteMarquee
