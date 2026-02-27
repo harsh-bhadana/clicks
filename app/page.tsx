@@ -10,7 +10,7 @@ export default async function Page() {
 
   // Transform blobs into GalleryImage objects
   const allImages: GalleryImage[] = blobs
-    .filter((blob) => blob.pathname.match(/\.(jpg|jpeg|png|webp|heic)$/i))
+    .filter((blob) => blob.pathname.match(/\.(jpg|jpeg|png|webp|heic|avif)$/i))
     .sort((a, b) => {
       // Try to sort by the number in the filename if possible (click_1, click_2, etc.)
       const numA = parseInt(a.pathname.match(/\d+/)?.[0] || "0");
