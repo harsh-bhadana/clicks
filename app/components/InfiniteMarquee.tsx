@@ -58,7 +58,7 @@ export default function InfiniteMarquee({
                             }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                        
+
                         {/* Subtle inner border for premium look */}
                         <div className="absolute inset-0 rounded-3xl border border-white/5 pointer-events-none" />
                     </div>
@@ -83,8 +83,8 @@ export default function InfiniteMarquee({
             `}</style>
 
             {/* Side gradients for fading out */}
-            <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-black via-black/80 to-transparent z-10 pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-48 bg-gradient-to-l from-black via-black/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 w-12 md:w-48 bg-gradient-to-r from-black via-black/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-12 md:w-48 bg-gradient-to-l from-black via-black/80 to-transparent z-10 pointer-events-none" />
         </div>
     );
 }
