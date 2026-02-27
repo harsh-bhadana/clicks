@@ -12,6 +12,12 @@ interface HomeClientProps {
     allImages: GalleryImage[];
 }
 
+/**
+ * The main client-side container for the Clicks photography gallery.
+ * Orchestrates the loading sequence, infinite scrolling, and lightbox interactions.
+ * 
+ * @param allImages - Initial set of images fetched from the server.
+ */
 export default function HomeClient({ allImages }: HomeClientProps) {
     const [setsCount, setSetsCount] = useState(1);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);

@@ -13,6 +13,16 @@ interface InfiniteMarqueeProps {
     isPaused?: boolean;
 }
 
+/**
+ * Displays a horizontally scrolling marquee of images.
+ * Uses a triple-buffer technique for seamless looping and dynamic aspect ratio detection.
+ * 
+ * @param direction - The direction of the scroll ("left" or "right").
+ * @param speed - The duration of one full scroll cycle in seconds (higher is slower).
+ * @param images - The set of images to display in the track.
+ * @param onImageClick - Callback function triggered when an image is clicked.
+ * @param isPaused - If true, the scrolling animation is paused.
+ */
 export default function InfiniteMarquee({
     direction = "left",
     speed = 40,
