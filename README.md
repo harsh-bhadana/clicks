@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clicks — Photography Showcase
 
-## Getting Started
+**Clicks** is a minimal, immersive, and premium photography gallery designed to showcase personal photography through infinite-scrolling streams. 
 
-First, run the development server:
+The experience is built with a "content-first" philosophy, using high-performance animations and a sophisticated dark aesthetic to let the photography speak for itself.
+
+## ✨ Key Features
+
+- **Infinite Streams**: Endless horizontal marquees that showcase photos in multiple tracks with varied speeds and directions.
+- **Immersive View**: A premium lightbox experience for detailed viewing of individual "clicks".
+- **Premium Aesthetics**: Dark mode by default, featuring glassmorphism effects, fluid animations, and high-performance transitions.
+- **Responsive Design**: Seamlessly adapts to different screen sizes while maintaining its cinematic feel.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Typography**: [Geist Sans/Mono](https://vercel.com/font)
+
+## 🚀 Getting Started
+
+To run the gallery locally:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the experience.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📸 Photography
+This project serves as a digital home for my personal photography, captured and curated with care. Each "click" represents a moment, a perspective, or a story worth sharing.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Built with passion for photography and high-end web experiences.*

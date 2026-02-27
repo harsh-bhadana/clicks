@@ -42,9 +42,10 @@ export default function Lightbox({ image, onClose }: LightboxProps) {
             {/* Close Button */}
             <button
                 onClick={onClose}
-                className="absolute top-8 right-8 z-10 p-4 text-white hover:text-purple-400 transition-colors uppercase text-[10px] tracking-[0.3em] font-bold"
+                className="absolute top-8 right-8 z-10 p-4 text-white/50 hover:text-white transition-all duration-500 uppercase text-[10px] tracking-[0.4em] font-light group"
             >
-                Close / ESC
+                <span className="inline-block transition-transform duration-500 group-hover:rotate-90 mr-2">✕</span>
+                Close
             </button>
 
             {/* Image Container */}

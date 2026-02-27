@@ -36,7 +36,7 @@ export default function InfiniteMarquee({
                     <div
                         key={i}
                         onClick={() => onImageClick(img)}
-                        className="relative h-[280px] mx-6 rounded-2xl overflow-hidden glass hover:scale-[1.05] transition-all duration-700 cursor-pointer group"
+                        className="relative h-[320px] mx-8 rounded-3xl overflow-hidden glass border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-1000 cursor-pointer group shadow-2xl shadow-black/50"
                         style={{
                             aspectRatio: aspectRatios[i] || '16/9',
                             width: 'auto'
@@ -46,9 +46,9 @@ export default function InfiniteMarquee({
                             src={img.src}
                             alt="Photography Gallery Image"
                             fill
-                            sizes="(max-width: 768px) 400px, 600px"
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            quality={75}
+                            sizes="(max-width: 768px) 400px, 800px"
+                            className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
+                            quality={85}
                             onLoad={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 setAspectRatios(prev => ({
@@ -57,7 +57,10 @@ export default function InfiniteMarquee({
                                 }));
                             }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                        
+                        {/* Subtle inner border for premium look */}
+                        <div className="absolute inset-0 rounded-3xl border border-white/5 pointer-events-none" />
                     </div>
                 ))}
             </div>
