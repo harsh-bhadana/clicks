@@ -67,7 +67,7 @@ export default function Lightbox({ image, onClose }: LightboxProps) {
                         sizes="90vw"
                         className="w-auto h-auto max-w-full max-h-[85vh] object-contain p-2"
                         priority
-                        quality={95}
+                        quality={100}
                     />
                 </div>
             </div>

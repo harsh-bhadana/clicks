@@ -52,13 +52,14 @@ export default function InfiniteMarquee({
                             width: 'auto'
                         }}
                     >
+                        <div className="absolute inset-0 bg-white/5 animate-pulse" />
                         <Image
                             src={img.src}
                             alt="Photography Gallery Image"
                             fill
-                            sizes="(max-width: 768px) 400px, 800px"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
                             className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
-                            quality={85}
+                            quality={70}
                             onLoad={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 // Delay the aspect ratio change to avoid "jerkiness" during initial load
