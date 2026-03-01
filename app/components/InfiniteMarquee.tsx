@@ -61,10 +61,13 @@ export default function InfiniteMarquee({
                             quality={85}
                             onLoad={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                setAspectRatios(prev => ({
-                                    ...prev,
-                                    [i]: target.naturalWidth / target.naturalHeight
-                                }));
+                                // Delay the aspect ratio change to avoid "jerkiness" during initial load
+                                setTimeout(() => {
+                                    setAspectRatios(prev => ({
+                                        ...prev,
+                                        [i]: target.naturalWidth / target.naturalHeight
+                                    }));
+                                }, 5000);
                             }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
