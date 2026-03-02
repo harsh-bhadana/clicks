@@ -3,6 +3,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
+/**
+ * A cinematic introduction component that displays a loading animation.
+ * Prevents body scrolling during the animation and handles its own visibility state.
+ */
 export default function PageLoader() {
     const [isVisible, setIsVisible] = useState(true);
     const words = "CLICKS".split("");

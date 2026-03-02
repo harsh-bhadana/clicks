@@ -11,6 +11,13 @@ The experience is built with a "content-first" philosophy, using high-performanc
 - **Premium Aesthetics**: Dark mode by default, featuring glassmorphism effects, fluid animations, and high-performance transitions.
 - **Responsive Design**: Seamlessly adapts to different screen sizes while maintaining its cinematic feel.
 
+## 📖 Documentation
+
+For more detailed information on how Clicks is built, check out the following:
+
+- [**Architecture Overview**](file:///d:/Code/clicks/docs/ARCHITECTURE.md): Technical stack, data flow, and design philosophy.
+- [**Component Guide**](file:///d:/Code/clicks/docs/COMPONENTS.md): Detailed prop definitions and implementation logic for UI components.
+
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)

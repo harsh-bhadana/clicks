@@ -10,6 +10,13 @@ interface LightboxProps {
     onClose: () => void;
 }
 
+/**
+ * A full-screen overlay for viewing a single image in high detail.
+ * Features a heavy backdrop blur and body-scroll locking.
+ * 
+ * @param image - The image to display, or null if the lightbox should be hidden.
+ * @param onClose - Callback function to close the lightbox.
+ */
 export default function Lightbox({ image, onClose }: LightboxProps) {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -60,7 +67,7 @@ export default function Lightbox({ image, onClose }: LightboxProps) {
                         sizes="90vw"
                         className="w-auto h-auto max-w-full max-h-[85vh] object-contain p-2"
                         priority
-                        quality={95}
+                        quality={100}
                     />
                 </div>
             </div>

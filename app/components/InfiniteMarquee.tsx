@@ -13,6 +13,16 @@ interface InfiniteMarqueeProps {
     isPaused?: boolean;
 }
 
+/**
+ * Displays a horizontally scrolling marquee of images.
+ * Uses a triple-buffer technique for seamless looping and dynamic aspect ratio detection.
+ * 
+ * @param direction - The direction of the scroll ("left" or "right").
+ * @param speed - The duration of one full scroll cycle in seconds (higher is slower).
+ * @param images - The set of images to display in the track.
+ * @param onImageClick - Callback function triggered when an image is clicked.
+ * @param isPaused - If true, the scrolling animation is paused.
+ */
 export default function InfiniteMarquee({
     direction = "left",
     speed = 40,
@@ -42,19 +52,23 @@ export default function InfiniteMarquee({
                             width: 'auto'
                         }}
                     >
+                        <div className="absolute inset-0 bg-white/5 animate-pulse" />
                         <Image
                             src={img.src}
                             alt="Photography Gallery Image"
                             fill
-                            sizes="(max-width: 768px) 400px, 800px"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
                             className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
-                            quality={85}
+                            quality={70}
                             onLoad={(e) => {
                                 const target = e.target as HTMLImageElement;
-                                setAspectRatios(prev => ({
-                                    ...prev,
-                                    [i]: target.naturalWidth / target.naturalHeight
-                                }));
+                                // Delay the aspect ratio change to avoid "jerkiness" during initial load
+                                setTimeout(() => {
+                                    setAspectRatios(prev => ({
+                                        ...prev,
+                                        [i]: target.naturalWidth / target.naturalHeight
+                                    }));
+                                }, 5000);
                             }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
