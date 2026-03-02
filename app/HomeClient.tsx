@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import InfiniteMarquee from "./components/InfiniteMarquee";
 import Lightbox from "./components/Lightbox";
 import PageLoader from "./components/PageLoader";
+import CustomCursor from "./components/CustomCursor";
 
 import { GalleryImage } from "./types";
 
@@ -81,8 +82,9 @@ export default function HomeClient({ allImages }: HomeClientProps) {
     }, [loadMore]);
 
     return (
-        <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden">
+        <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden cursor-none">
             <PageLoader />
+            <CustomCursor />
 
             <AnimatePresence>
                 {!isInitialLoad && (
@@ -173,6 +175,16 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                         <Lightbox
                             image={selectedImage}
                             onClose={() => setSelectedImage(null)}
+                            onNext={() => {
+                                const currentIndex = allImages.findIndex(img => img.src === selectedImage?.src);
+                                const nextIndex = (currentIndex + 1) % allImages.length;
+                                setSelectedImage(allImages[nextIndex]);
+                            }}
+                            onPrev={() => {
+                                const currentIndex = allImages.findIndex(img => img.src === selectedImage?.src);
+                                const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+                                setSelectedImage(allImages[prevIndex]);
+                            }}
                         />
 
                         {/* Footer */}
