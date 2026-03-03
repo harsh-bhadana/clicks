@@ -12,8 +12,10 @@
 ## 📡 Data Flow
 
 1.  **Server-Side Retrieval (`app/page.tsx`)**:
-    - Uses `@vercel/blob` to list all images in the `gallery/` prefix.
-    - Sorts images by filename (e.g., `click_1.jpg`, `click_2.jpg`).
+    - Utilizes the `@vercel/blob` SDK to list all uploaded images under the `gallery/` prefix.
+    - Requires the `BLOB_READ_WRITE_TOKEN` environment variable to authenticate the list request.
+    - Filters fetched blobs to ensure only valid image extensions are processed.
+    - Sorts images sequentially by filename (e.g., `click_1.jpg`, `click_2.jpg`) for predictable ordering.
     - Passes the resulting `GalleryImage[]` array to the client component.
 2.  **Client-Side Orchestration (`app/HomeClient.tsx`)**:
     - Manages the initial loading sequence via `PageLoader`.

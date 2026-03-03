@@ -35,6 +35,7 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
             window.addEventListener("keydown", handleKeyDown);
         } else {
             document.body.style.overflow = "auto";
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsZoomed(false);
         }
         return () => {

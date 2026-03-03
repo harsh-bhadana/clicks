@@ -5,6 +5,15 @@ import { GalleryImage } from "./types";
 
 export const revalidate = 60; // Revalidate every minute
 
+/**
+ * The main server component for the Clicks gallery route.
+ * 
+ * Fetches all images from Vercel Blob storage under the `gallery/` prefix,
+ * filters for valid image formats, and sorts them numerically based on 
+ * their filenames before passing them to the HomeClient component.
+ * 
+ * @returns The HomeClient component populated with the fetched images.
+ */
 export default async function Page() {
   const { blobs } = await list({ prefix: "gallery/" });
 

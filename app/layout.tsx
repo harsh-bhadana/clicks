@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   description: "A minimal, immersive photography gallery experience showcasing moments captured through the lens.",
 };
 
+/**
+ * The root layout for the Clicks application.
+ * 
+ * Configures the Geist Sans and Mono fonts and sets up the base HTML structure.
+ * Also defines the default SEO metadata used across the gallery.
+ * 
+ * @param children - The child React nodes to render within the body.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
