@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
 
+/**
+ * A custom interactive cursor component.
+ * 
+ * Replaces the default browser cursor with a visually styled element that follows
+ * the mouse using Framer Motion springs. When hovering over interactive elements 
+ * (like images or elements with `data-cursor`), the cursor expands and displays 
+ * a contextual label (e.g., "view", "next", "prev").
+ */
 export default function CustomCursor() {
     const [isHoveringImage, setIsHoveringImage] = useState(false);
     const [cursorLabel, setCursorLabel] = useState("");
