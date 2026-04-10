@@ -1,58 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
-
-import { GalleryImage } from "../types";
+import { BLUR_DATA_URL } from "../lib/blur";
+import type { GalleryImage } from "../types";
 
 interface InfiniteMarqueeProps {
     direction?: "left" | "right";
     speed?: number;
     images: GalleryImage[];
-    onImageClick: (image: GalleryImage) => void;
     isPaused?: boolean;
+    onImageClick?: (img: GalleryImage) => void;
 }
 
 /**
- * Displays a horizontally scrolling marquee of images.
- * Uses a triple-buffer technique for seamless looping and dynamic aspect ratio detection.
- * 
- * @param direction - The direction of the scroll ("left" or "right").
- * @param speed - The duration of one full scroll cycle in seconds (higher is slower).
- * @param images - The set of images to display in the track.
- * @param onImageClick - Callback function triggered when an image is clicked.
- * @param isPaused - If true, the scrolling animation is paused.
+ * Horizontally-scrolling image reel with triple-buffer seamless looping.
  */
 export default function InfiniteMarquee({
     direction = "left",
     speed = 40,
     images,
+    isPaused = false,
     onImageClick,
-    isPaused = false
 }: InfiniteMarqueeProps) {
-    // Triple the images to ensure seamless loop
+    // Triple the images so the loop seam never falls within one viewport width.
     const marqueeImages = [...images, ...images, ...images];
-    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
 
     return (
         <div className="relative w-full overflow-hidden py-4 select-none">
             <div
-                className={`flex w-max hover:[animation-play-state:paused] ${isPaused ? "[animation-play-state:paused]" : ""
-                    } ${direction === "left" ? "animate-infinite-scroll-left" : "animate-infinite-scroll-right"
-                    }`}
+                className={`flex w-max hover:[animation-play-state:paused] ${
+                    isPaused ? "[animation-play-state:paused]" : ""
+                } ${
+                    direction === "left"
+                        ? "animate-infinite-scroll-left"
+                        : "animate-infinite-scroll-right"
+                }`}
                 style={{ animationDuration: `${speed}s` }}
             >
                 {marqueeImages.map((img, i) => (
-                    <div
+                    <Link
                         key={i}
-                        onClick={() => onImageClick(img)}
-                        className="relative h-[320px] mx-8 rounded-3xl overflow-hidden glass border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-1000 cursor-pointer group shadow-2xl shadow-black/50"
-                        style={{
-                            aspectRatio: aspectRatios[i] || '16/9',
-                            width: 'auto'
+                        href={`/photo/${img.id}`}
+                        scroll={false}
+                        prefetch={false}
+                        onClick={(e) => {
+                            if (onImageClick) {
+                                e.preventDefault();
+                                onImageClick(img);
+                            }
                         }}
+                        className="relative block h-[320px] mx-8 rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-1000 group shadow-2xl shadow-black/50"
+                        style={{ aspectRatio: "3/2", width: "auto" }}
+                        data-cursor="view"
+                        aria-label={`Open photo ${img.id}`}
                     >
-                        <div className="absolute inset-0 bg-white/5 animate-pulse" />
                         <Image
                             src={img.src}
                             alt="Photography Gallery Image"
@@ -60,33 +62,25 @@ export default function InfiniteMarquee({
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
                             className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
                             quality={70}
-                            onLoad={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                // Delay the aspect ratio change to avoid "jerkiness" during initial load
-                                setTimeout(() => {
-                                    setAspectRatios(prev => ({
-                                        ...prev,
-                                        [i]: target.naturalWidth / target.naturalHeight
-                                    }));
-                                }, 5000);
-                            }}
+                            placeholder="blur"
+                            blurDataURL={BLUR_DATA_URL}
                         />
+                        {/* Hover gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-
-                        {/* Subtle inner border for premium look */}
+                        {/* Inner border for premium look */}
                         <div className="absolute inset-0 rounded-3xl border border-white/5 pointer-events-none" />
-                    </div>
+                    </Link>
                 ))}
             </div>
 
             <style jsx>{`
                 @keyframes infiniteScrollLeft {
                     from { transform: translateX(0); }
-                    to { transform: translateX(calc(-100% / 3)); }
+                    to   { transform: translateX(calc(-100% / 3)); }
                 }
                 @keyframes infiniteScrollRight {
                     from { transform: translateX(calc(-100% / 3)); }
-                    to { transform: translateX(0); }
+                    to   { transform: translateX(0); }
                 }
                 .animate-infinite-scroll-left {
                     animation: infiniteScrollLeft var(--duration, 40s) linear infinite;
@@ -96,7 +90,7 @@ export default function InfiniteMarquee({
                 }
             `}</style>
 
-            {/* Side gradients for fading out */}
+            {/* Edge fade-out gradients */}
             <div className="absolute inset-y-0 left-0 w-12 md:w-48 bg-gradient-to-r from-black via-black/80 to-transparent z-10 pointer-events-none" />
             <div className="absolute inset-y-0 right-0 w-12 md:w-48 bg-gradient-to-l from-black via-black/80 to-transparent z-10 pointer-events-none" />
         </div>
