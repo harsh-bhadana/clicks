@@ -108,6 +108,7 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
                             className="relative rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl transition-all duration-700"
                         >
                             <motion.div
+                                layoutId={`img-${image.id}`}
                                 animate={{ scale: isZoomed ? 1.5 : 1 }}
                                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                                 className="relative flex items-center justify-center"

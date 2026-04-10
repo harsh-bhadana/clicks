@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { BLUR_DATA_URL } from "../lib/blur";
+import { motion } from "framer-motion";
 import type { GalleryImage } from "../types";
 
 interface InfiniteMarqueeProps {
@@ -55,16 +56,22 @@ export default function InfiniteMarquee({
                         data-cursor="view"
                         aria-label={`Open photo ${img.id}`}
                     >
-                        <Image
-                            src={img.src}
-                            alt="Photography Gallery Image"
-                            fill
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-                            className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
-                            quality={70}
-                            placeholder="blur"
-                            blurDataURL={BLUR_DATA_URL}
-                        />
+                        <motion.div
+                            layoutId={`img-${img.id}`}
+                            className="relative w-full h-full"
+                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                            <Image
+                                src={img.src}
+                                alt="Photography Gallery Image"
+                                fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                                className="object-cover transition-transform duration-[2000ms] cubic-bezier(0.22, 1, 0.36, 1) group-hover:scale-110"
+                                quality={70}
+                                placeholder="blur"
+                                blurDataURL={BLUR_DATA_URL}
+                            />
+                        </motion.div>
                         {/* Hover gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                         {/* Inner border for premium look */}

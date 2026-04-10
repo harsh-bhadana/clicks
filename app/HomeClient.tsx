@@ -39,16 +39,21 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
     // This is the secret to making the app "feel" instant again.
     const [localSelectedImage, setLocalSelectedImage] = useState<GalleryImage | null>(null);
 
-    // Sync local state with URL for deep-links and refreshes
+    // Listen for browser back/forward buttons
     useEffect(() => {
-        const photoId = pathname.match(/\/photo\/(\d+)/)?.[1];
-        if (photoId) {
-            const img = allImages.find((i) => i.id === Number(photoId));
-            if (img) setLocalSelectedImage(img);
-        } else {
-            setLocalSelectedImage(null);
-        }
-    }, [pathname, allImages]);
+        const handlePopState = () => {
+            const photoId = window.location.pathname.match(/\/photo\/(\d+)/)?.[1];
+            if (photoId) {
+                const img = allImages.find((i) => i.id === Number(photoId));
+                if (img) setLocalSelectedImage(img);
+            } else {
+                setLocalSelectedImage(null);
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, [allImages]);
 
     const [setsCount, setSetsCount] = useState(1);
     const [isPending, startTransition] = useTransition();
@@ -68,45 +73,43 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
     const handleImageClick = useCallback((img: GalleryImage) => {
         // 1. Update state instantly
         setLocalSelectedImage(img);
-        // 2. Update URL silently in background
-        router.push(`/photo/${img.id}`, { scroll: false });
-    }, [router]);
+        // 2. Update URL silently in background (Bypasses RSC fetch lag)
+        window.history.pushState(null, "", `/photo/${img.id}`);
+    }, []);
 
     const handleCloseLightbox = useCallback(() => {
         setLocalSelectedImage(null);
-        router.push("/", { scroll: false });
-    }, [router]);
+        window.history.pushState(null, "", "/");
+    }, []);
 
     const handleNext = useCallback(() => {
         if (!localSelectedImage) return;
         const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
         const nextImg = allImages[(idx + 1) % allImages.length];
         setLocalSelectedImage(nextImg);
-        router.replace(`/photo/${nextImg.id}`, { scroll: false });
-    }, [allImages, localSelectedImage, router]);
+        window.history.replaceState(null, "", `/photo/${nextImg.id}`);
+    }, [allImages, localSelectedImage]);
 
     const handlePrev = useCallback(() => {
         if (!localSelectedImage) return;
         const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
         const prevImg = allImages[(idx - 1 + allImages.length) % allImages.length];
         setLocalSelectedImage(prevImg);
-        router.replace(`/photo/${prevImg.id}`, { scroll: false });
-    }, [allImages, localSelectedImage, router]);
-
-    // ── Memoised image splits ──────────────────────────────────────────────
-    const { set1Images, set2Images } = useMemo(() => {
-        const mid = Math.ceil(allImages.length / 2);
-        return {
-            set1Images: allImages.slice(0, mid),
-            set2Images: allImages.slice(mid),
-        };
-    }, [allImages]);
+        window.history.replaceState(null, "", `/photo/${prevImg.id}`);
+    }, [allImages, localSelectedImage]);
 
     // Header drop: center → top, timed to match PageLoader fade-out.
     useEffect(() => {
+        // Initial check for deep-linked modal (if gallery is the entry page)
+        const photoId = window.location.pathname.match(/\/photo\/(\d+)/)?.[1];
+        if (photoId) {
+            const img = allImages.find((i) => i.id === Number(photoId));
+            if (img) setLocalSelectedImage(img);
+        }
+
         const timer = setTimeout(() => setIsHeaderCentered(false), 3200);
         return () => clearTimeout(timer);
-    }, []);
+    }, [allImages]);
 
     // Scroll-reveal: re-registers whenever new sets are appended.
     useEffect(() => {
