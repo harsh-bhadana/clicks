@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { GalleryImage } from "../types";
+import { BLUR_DATA_URL } from "../lib/blur";
 
 interface LightboxProps {
     image: GalleryImage | null;
@@ -121,6 +121,8 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
                                     className="w-auto h-auto max-w-[85vw] max-h-[80vh] object-contain p-2"
                                     priority
                                     quality={100}
+                                    placeholder="blur"
+                                    blurDataURL={BLUR_DATA_URL}
                                 />
                             </motion.div>
                         </div>
