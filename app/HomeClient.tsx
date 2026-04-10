@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useTransition, useDeferredValue, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import InfiniteMarquee from "./components/InfiniteMarquee";
 import Lightbox from "./components/Lightbox";
@@ -21,15 +21,23 @@ interface HomeClientProps {
  */
 export default function HomeClient({ allImages }: HomeClientProps) {
     const [setsCount, setSetsCount] = useState(1);
+    const [isPending, startTransition] = useTransition();
+    const deferredSetsCount = useDeferredValue(setsCount);
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [isHeaderCentered, setIsHeaderCentered] = useState(true);
     const observerTarget = useRef(null);
 
-    // Split images into two sets for the marquee effect
-    const midPoint = Math.ceil(allImages.length / 2);
-    const set1Images = allImages.slice(0, midPoint);
-    const set2Images = allImages.slice(midPoint);
+    // Split images into two sets for the marquee effect — memoized so the
+    // arrays are stable references and don't cause InfiniteMarquee to re-render
+    // on every parent render.
+    const { set1Images, set2Images } = useMemo(() => {
+        const mid = Math.ceil(allImages.length / 2);
+        return {
+            set1Images: allImages.slice(0, mid),
+            set2Images: allImages.slice(mid),
+        };
+    }, [allImages]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -62,10 +70,12 @@ export default function HomeClient({ allImages }: HomeClientProps) {
     const loadMore = useCallback(
         (entries: IntersectionObserverEntry[]) => {
             if (entries[0].isIntersecting && !isInitialLoad) {
-                setSetsCount((prev) => prev + 1);
+                // useTransition defers the heavy marquee re-render — keeps
+                // existing animations and scroll position responsive.
+                startTransition(() => setSetsCount((prev) => prev + 1));
             }
         },
-        [isInitialLoad]
+        [isInitialLoad, startTransition]
     );
 
     useEffect(() => {
@@ -117,7 +127,7 @@ export default function HomeClient({ allImages }: HomeClientProps) {
                         {/* Marquee Streams Section */}
                         <section className={`pt-72 pb-48 space-y-24 transition-all duration-[1500ms] ease-in-out ${selectedImage ? "opacity-20 blur-md scale-[0.95]" : "opacity-100 blur-0 scale-100"
                             }`}>
-                            {Array.from({ length: setsCount }).map((_, i) => (
+                            {Array.from({ length: deferredSetsCount }).map((_, i) => (
                                 <motion.div
                                     key={`set-${i}`}
                                     initial={{
@@ -167,23 +177,30 @@ export default function HomeClient({ allImages }: HomeClientProps) {
 
                             {/* Intersection Trigger */}
                             <div ref={observerTarget} className="h-20 w-full flex justify-center items-center">
-                                <div className="w-1 h-1 bg-white/20 rounded-full animate-ping" />
+                                {/* isPending is true while startTransition is computing new marquee sets */}
+                                <div className={`w-1 h-1 rounded-full transition-colors duration-500 ${
+                                    isPending ? "bg-purple-500 animate-ping" : "bg-white/20 animate-ping"
+                                }`} />
                             </div>
                         </section>
 
                         {/* Lightbox Popup */}
                         <Lightbox
                             image={selectedImage}
-                            onClose={() => setSelectedImage(null)}
+                            onClose={() =>
+                                // Closing is interactive — defer the DOM cleanup
+                                startTransition(() => setSelectedImage(null))
+                            }
                             onNext={() => {
                                 const currentIndex = allImages.findIndex(img => img.src === selectedImage?.src);
                                 const nextIndex = (currentIndex + 1) % allImages.length;
-                                setSelectedImage(allImages[nextIndex]);
+                                // Image switch: non-urgent, let Framer Motion animate first
+                                startTransition(() => setSelectedImage(allImages[nextIndex]));
                             }}
                             onPrev={() => {
                                 const currentIndex = allImages.findIndex(img => img.src === selectedImage?.src);
                                 const prevIndex = (currentIndex - 1 + allImages.length) % allImages.length;
-                                setSelectedImage(allImages[prevIndex]);
+                                startTransition(() => setSelectedImage(allImages[prevIndex]));
                             }}
                         />
 
