@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { BLUR_DATA_URL } from "../lib/blur";
 import { motion } from "framer-motion";
@@ -40,27 +39,21 @@ export default function InfiniteMarquee({
                 style={{ animationDuration: `${speed}s` }}
             >
                 {marqueeImages.map((img, i) => (
-                    <Link
+                    <motion.button
                         key={i}
-                        href={`/photo/${img.id}`}
-                        scroll={false}
-                        prefetch={false}
+                        layoutId={`img-${img.id}`}
                         onClick={(e) => {
                             if (onImageClick) {
                                 e.preventDefault();
                                 onImageClick(img);
                             }
                         }}
-                        className="relative block h-[320px] mx-8 rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-1000 group shadow-2xl shadow-black/50"
+                        className="relative block h-[320px] mx-8 rounded-3xl overflow-hidden border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-1000 group shadow-2xl shadow-black/50 bg-transparent p-0 cursor-none"
                         style={{ aspectRatio: "3/2", width: "auto" }}
                         data-cursor="view"
                         aria-label={`Open photo ${img.id}`}
                     >
-                        <motion.div
-                            layoutId={`img-${img.id}`}
-                            className="relative w-full h-full"
-                            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        >
+                        <div className="relative w-full h-full">
                             <Image
                                 src={img.src}
                                 alt="Photography Gallery Image"
@@ -71,12 +64,12 @@ export default function InfiniteMarquee({
                                 placeholder="blur"
                                 blurDataURL={BLUR_DATA_URL}
                             />
-                        </motion.div>
+                        </div>
                         {/* Hover gradient */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                         {/* Inner border for premium look */}
                         <div className="absolute inset-0 rounded-3xl border border-white/5 pointer-events-none" />
-                    </Link>
+                    </motion.button>
                 ))}
             </div>
 
