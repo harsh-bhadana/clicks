@@ -40,6 +40,32 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
     const deferredSetsCount = useDeferredValue(setsCount);
     const observerTarget = useRef<HTMLDivElement>(null);
 
+    // ── Hi-Res Prefetch (use() + Suspense pattern) ──────────────────────────
+    const [activeHiResPromise, setActiveHiResPromise] = useState<Promise<string> | null>(null);
+    const [isHiResPending, startHiResTransition] = useTransition();
+    const hiResCacheRef = useRef(new Map<string, Promise<string>>());
+
+    const getOrCreateHiResPromise = useCallback((src: string): Promise<string> => {
+        const cache = hiResCacheRef.current;
+        if (!cache.has(src)) {
+            cache.set(
+                src,
+                new Promise<string>((resolve) => {
+                    const img = new window.Image();
+                    img.onload = () => resolve(src);
+                    img.onerror = () => resolve(src);
+                    img.src = src;
+                })
+            );
+        }
+        return cache.get(src)!;
+    }, []);
+
+    /** Warm the cache on hover — no state update, just background prefetch. */
+    const handleImageHover = useCallback((img: GalleryImage) => {
+        getOrCreateHiResPromise(img.src);
+    }, [getOrCreateHiResPromise]);
+
     const [isHeaderCentered, setIsHeaderCentered] = useState(true);
 
     const { set1Images, set2Images } = useMemo(() => {
@@ -52,25 +78,47 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
 
     const handleImageClick = useCallback((img: GalleryImage) => {
         setLocalSelectedImage(img);
-    }, []);
+        setActiveHiResPromise(getOrCreateHiResPromise(img.src));
+        // Prefetch adjacent images for instant lightbox navigation
+        const idx = allImages.findIndex(i => i.id === img.id);
+        const nextImg = allImages[(idx + 1) % allImages.length];
+        const prevImg = allImages[(idx - 1 + allImages.length) % allImages.length];
+        getOrCreateHiResPromise(nextImg.src);
+        getOrCreateHiResPromise(prevImg.src);
+    }, [getOrCreateHiResPromise, allImages]);
 
     const handleCloseLightbox = useCallback(() => {
         setLocalSelectedImage(null);
+        setActiveHiResPromise(null);
     }, []);
 
     const handleNext = useCallback(() => {
         if (!localSelectedImage) return;
         const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
         const nextImg = allImages[(idx + 1) % allImages.length];
-        setLocalSelectedImage(nextImg);
-    }, [allImages, localSelectedImage]);
+        // startTransition: current image stays visible while next loads
+        startHiResTransition(() => {
+            setLocalSelectedImage(nextImg);
+            setActiveHiResPromise(getOrCreateHiResPromise(nextImg.src));
+        });
+        // Prefetch one ahead for instant forward navigation
+        const nextNextImg = allImages[(idx + 2) % allImages.length];
+        getOrCreateHiResPromise(nextNextImg.src);
+    }, [allImages, localSelectedImage, startHiResTransition, getOrCreateHiResPromise]);
 
     const handlePrev = useCallback(() => {
         if (!localSelectedImage) return;
         const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
         const prevImg = allImages[(idx - 1 + allImages.length) % allImages.length];
-        setLocalSelectedImage(prevImg);
-    }, [allImages, localSelectedImage]);
+        // startTransition: current image stays visible while prev loads
+        startHiResTransition(() => {
+            setLocalSelectedImage(prevImg);
+            setActiveHiResPromise(getOrCreateHiResPromise(prevImg.src));
+        });
+        // Prefetch one behind for instant backward navigation
+        const prevPrevImg = allImages[(idx - 2 + allImages.length) % allImages.length];
+        getOrCreateHiResPromise(prevPrevImg.src);
+    }, [allImages, localSelectedImage, startHiResTransition, getOrCreateHiResPromise]);
 
     // Header drop: center → top, timed to match PageLoader fade-out.
     useEffect(() => {
@@ -165,6 +213,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     images={i % 2 === 0 ? set1Images : set2Images}
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
+                                    onImageHover={handleImageHover}
                                 />
                             </motion.div>
                             <motion.div
@@ -179,6 +228,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     images={i % 2 === 0 ? set2Images : set1Images}
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
+                                    onImageHover={handleImageHover}
                                 />
                             </motion.div>
                             <motion.div
@@ -193,6 +243,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     images={i % 2 === 0 ? set1Images : set2Images}
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
+                                    onImageHover={handleImageHover}
                                 />
                             </motion.div>
                         </motion.div>
@@ -221,6 +272,8 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                     onClose={handleCloseLightbox} 
                     onNext={handleNext}
                     onPrev={handlePrev}
+                    hiResPromise={activeHiResPromise}
+                    isNavigating={isHiResPending}
                 />
 
                 {/* ── Footer ─────────────────────────────────────────── */}

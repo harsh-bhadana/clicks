@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense, use } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +12,10 @@ interface LightboxProps {
     onClose: () => void;
     onNext?: () => void;
     onPrev?: () => void;
+    /** Promise that resolves to the hi-res image URL. Consumed via use(). */
+    hiResPromise?: Promise<string> | null;
+    /** True while a startTransition navigation is in-flight. */
+    isNavigating?: boolean;
 }
 
 /**
@@ -21,7 +25,7 @@ interface LightboxProps {
  * @param image - The image to display, or null if the lightbox should be hidden.
  * @param onClose - Callback function to close the lightbox.
  */
-export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxProps) {
+export default function Lightbox({ image, onClose, onNext, onPrev, hiResPromise, isNavigating }: LightboxProps) {
     const [isZoomed, setIsZoomed] = useState(false);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -106,7 +110,9 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
                         onClick={() => setIsZoomed(!isZoomed)}
                     >
                         <div
-                            className="relative rounded-3xl overflow-hidden glass border border-white/10 shadow-3xl transition-all duration-700"
+                            className={`relative rounded-3xl overflow-hidden glass border shadow-3xl transition-all duration-700 ${
+                                isNavigating ? "border-purple-500/30 shadow-purple-500/10" : "border-white/10"
+                            }`}
                         >
                             <motion.div
                                 layoutId={`img-${image.id}`}
@@ -114,18 +120,43 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
                                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                                 className="relative flex items-center justify-center"
                             >
-                                <Image
-                                    src={image.src}
-                                    alt="Photography Gallery Image"
-                                    width={1920}
-                                    height={1080}
-                                    sizes="90vw"
-                                    className="w-auto h-auto max-w-[85vw] max-h-[80vh] object-contain p-2"
-                                    priority
-                                    quality={100}
-                                    placeholder="blur"
-                                    blurDataURL={BLUR_DATA_URL}
-                                />
+                                {hiResPromise ? (
+                                    <Suspense
+                                        fallback={
+                                            <div className="relative">
+                                                <Image
+                                                    src={image.src}
+                                                    alt="Loading full resolution…"
+                                                    width={1920}
+                                                    height={1080}
+                                                    sizes="90vw"
+                                                    className="w-auto h-auto max-w-[85vw] max-h-[80vh] object-contain p-2 blur-[2px] brightness-[0.85]"
+                                                    quality={20}
+                                                    placeholder="blur"
+                                                    blurDataURL={BLUR_DATA_URL}
+                                                />
+                                                <div className="absolute inset-0 flex items-end justify-start p-6 pointer-events-none">
+                                                    <SuspenseStatusBadge status="suspending" />
+                                                </div>
+                                            </div>
+                                        }
+                                    >
+                                        <SuspendingImage hiResPromise={hiResPromise} image={image} />
+                                    </Suspense>
+                                ) : (
+                                    <Image
+                                        src={image.src}
+                                        alt="Photography Gallery Image"
+                                        width={1920}
+                                        height={1080}
+                                        sizes="90vw"
+                                        className="w-auto h-auto max-w-[85vw] max-h-[80vh] object-contain p-2"
+                                        priority
+                                        quality={100}
+                                        placeholder="blur"
+                                        blurDataURL={BLUR_DATA_URL}
+                                    />
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>
@@ -142,5 +173,62 @@ export default function Lightbox({ image, onClose, onNext, onPrev }: LightboxPro
                 </motion.div>
             )}
         </AnimatePresence>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Suspense sub-components — must be separate components so use() can suspend
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Calls use(hiResPromise) directly in render — the heart of the pattern.
+ * No useEffect, no useState, no isLoading. React suspends this component
+ * until the promise resolves, and the parent Suspense boundary shows the
+ * blurred low-res fallback automatically.
+ */
+function SuspendingImage({ hiResPromise, image }: { hiResPromise: Promise<string>; image: GalleryImage }) {
+    // ⚡ This is the entire data-fetching pattern. Just use().
+    const resolvedSrc = use(hiResPromise);
+
+    return (
+        <div className="relative">
+            <Image
+                src={resolvedSrc}
+                alt="Photography Gallery Image — Full Resolution"
+                width={1920}
+                height={1080}
+                sizes="90vw"
+                className="w-auto h-auto max-w-[85vw] max-h-[80vh] object-contain p-2"
+                priority
+                quality={100}
+            />
+            <div className="absolute inset-0 flex items-end justify-start p-6 pointer-events-none">
+                <SuspenseStatusBadge status="resolved" />
+            </div>
+        </div>
+    );
+}
+
+/** Visual indicator showing the Suspense lifecycle state. */
+function SuspenseStatusBadge({ status }: { status: "suspending" | "resolved" }) {
+    const isSuspending = status === "suspending";
+    return (
+        <div
+            className={`
+                flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] tracking-widest uppercase
+                border backdrop-blur-md transition-all duration-500
+                ${isSuspending
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-400/80"
+                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400/80"
+                }
+            `}
+        >
+            <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                    isSuspending ? "bg-amber-400 animate-pulse" : "bg-emerald-400"
+                }`}
+            />
+            {isSuspending ? "Suspending…" : "Hi-Res Loaded"}
+        </div>
     );
 }
