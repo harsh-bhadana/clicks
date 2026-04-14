@@ -27,14 +27,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout — wires up fonts and accepts the `@modal` parallel route slot.
- *
- * `modal` renders alongside `children` in the same body, ensuring the Lightbox
- * modal overlay is always mounted at the root level regardless of which page
- * the user is on.
+ * Root layout — wires up fonts and global styles.
  *
  * @param children - Main page content (gallery).
- * @param modal    - @modal parallel route slot (PhotoModal or null via default.tsx).
  */
 export default function RootLayout({
   children,

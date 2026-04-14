@@ -26,8 +26,7 @@ interface HomeClientProps {
  * 
  * Performance tuning:
  * - Local state `localSelectedImage` provides 0ms response on click.
- * - `router.push` updates URL in background for shareable state.
- * - This "Hybrid" approach combines client-side speed with URL routing.
+ * - Entirely Single-Page architecture without navigation lag.
  */
 export default function HomeClient({ imagePromise }: HomeClientProps) {
     const allImages = use(imagePromise);
@@ -210,9 +209,8 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                 </section>
 
                 {/* 
-                 * LOCAL LIGHTBOX: This provides the "Instant" experience.
-                 * The @modal/ intercepts still work for refresh/deeplink, but 
-                 * for intra-gallery navigation, this local instance is used.
+                 * LOCAL LIGHTBOX: Single-Page Experience
+                 * All lightbox state is entirely in-memory for instant response.
                  */}
                 <Lightbox 
                     image={localSelectedImage} 

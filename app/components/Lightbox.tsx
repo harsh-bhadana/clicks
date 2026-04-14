@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { BLUR_DATA_URL } from "../lib/blur";
+import type { GalleryImage } from "../types";
 
 interface LightboxProps {
     image: GalleryImage | null;
