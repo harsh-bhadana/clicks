@@ -76,15 +76,4 @@ body {
 input:focus {
   outline: none;
 }
-
-/* Scroll Reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 1.2s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.reveal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
+

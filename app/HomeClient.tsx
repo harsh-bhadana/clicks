@@ -74,24 +74,13 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
 
     // Header drop: center → top, timed to match PageLoader fade-out.
     useEffect(() => {
-        const timer = setTimeout(() => setIsHeaderCentered(false), 3200);
+        console.log("HomeClient mounted, starting 3.2s header drop timer");
+        const timer = setTimeout(() => {
+            console.log("Setting isHeaderCentered to false");
+            setIsHeaderCentered(false);
+        }, 3200);
         return () => clearTimeout(timer);
     }, []);
-
-    // Scroll-reveal: re-registers whenever new sets are appended.
-    useEffect(() => {
-        const reveals = document.querySelectorAll(".reveal");
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) entry.target.classList.add("active");
-                });
-            },
-            { threshold: 0.1 }
-        );
-        reveals.forEach((reveal) => observer.observe(reveal));
-        return () => observer.disconnect();
-    }, [deferredSetsCount]);
 
     // Infinite-scroll trigger: wrapped in startTransition so appending new
     // marquee sets never blocks existing CSS animations.
@@ -130,7 +119,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
             >
                 {/* ── Header ─────────────────────────────────────────── */}
                 <header
-                    className={`fixed top-0 left-0 w-full z-50 px-8 mix-blend-difference pointer-events-none transition-all duration-[1500ms] cubic-bezier(0.76, 0, 0.24, 1) flex justify-center items-center ${
+                    className={`fixed top-0 left-0 w-full z-50 px-8 mix-blend-difference pointer-events-none transition-all duration-1000 ease-in-out flex justify-center items-center ${
                         isHeaderCentered ? "h-screen py-12" : "h-64 py-12"
                     } ${localSelectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
                 >
@@ -164,7 +153,12 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                             }}
                             className="space-y-24"
                         >
-                            <div className="reveal" style={{ transitionDelay: "100ms" }}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.1 }}
+                            >
                                 <InfiniteMarquee
                                     direction={i % 2 === 0 ? "left" : "right"}
                                     speed={30 + i}
@@ -172,8 +166,13 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
                                 />
-                            </div>
-                            <div className="reveal" style={{ transitionDelay: "300ms" }}>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.3 }}
+                            >
                                 <InfiniteMarquee
                                     direction={i % 2 === 0 ? "right" : "left"}
                                     speed={35 - i}
@@ -181,8 +180,13 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
                                 />
-                            </div>
-                            <div className="reveal" style={{ transitionDelay: "500ms" }}>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.5 }}
+                            >
                                 <InfiniteMarquee
                                     direction={i % 2 === 0 ? "left" : "right"}
                                     speed={25 + i * 2}
@@ -190,7 +194,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                                     isPaused={!!localSelectedImage}
                                     onImageClick={handleImageClick}
                                 />
-                            </div>
+                            </motion.div>
                         </motion.div>
                     ))}
 
