@@ -11,6 +11,7 @@ interface InfiniteMarqueeProps {
     images: GalleryImage[];
     isPaused?: boolean;
     onImageClick?: (img: GalleryImage) => void;
+    onImageHover?: (img: GalleryImage) => void;
 }
 
 /**
@@ -22,6 +23,7 @@ export default function InfiniteMarquee({
     images,
     isPaused = false,
     onImageClick,
+    onImageHover,
 }: InfiniteMarqueeProps) {
     // Triple the images so the loop seam never falls within one viewport width.
     const marqueeImages = [...images, ...images, ...images];
@@ -42,6 +44,7 @@ export default function InfiniteMarquee({
                     <motion.button
                         key={i}
                         layoutId={`img-${img.id}`}
+                        onMouseEnter={() => onImageHover?.(img)}
                         onClick={(e) => {
                             if (onImageClick) {
                                 e.preventDefault();
