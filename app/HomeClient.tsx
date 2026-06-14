@@ -7,280 +7,348 @@ import {
     useRef,
     useCallback,
     useTransition,
-    useDeferredValue,
     useMemo,
 } from "react";
-import { motion } from "framer-motion";
-import InfiniteMarquee from "./components/InfiniteMarquee";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import PageLoader from "./components/PageLoader";
 import CustomCursor from "./components/CustomCursor";
-import Lightbox from "./components/Lightbox"; // RE-ADDED for instant-local-rendering
+import ThreeGallery from "./components/ThreeGallery";
+import ProjectDetail from "./components/ProjectDetail";
 import type { GalleryImage } from "./types";
+
+// Dynamic metadata pool matching ThreeGallery for alignment
+const BRANDS = [
+    "AETHER", "SPECTRE", "NOVA", "ONYX", "QUANTUM", "APEX", "VORTEX", 
+    "NEBULA", "HELIX", "SOLAS", "CHRONOS", "ECLIPSE", "IGNIS", "ZEPHYR"
+];
+const TITLES = [
+    "DIGITAL REBIRTH", "CYBERNETIC GRID", "HYPER LUCID", "METAMORPHOSIS", 
+    "ETHEREAL FLOW", "SPATIAL SHIFT", "SUBLIME LIGHT", "GRAVITY WAVE", 
+    "PHANTOM VOID", "LUMINOUS PORTAL", "FUTURE CORE", "INFINITE SCROLL",
+    "VERTEX LABS", "KINETIC THEORY"
+];
+const TAGS_POOL = [
+    ["3D", "WEBGL"],
+    ["EXPERIENCE", "MOTION"],
+    ["BRANDING", "UI/UX"],
+    ["CREATIVE", "DEV"],
+    ["INTERACTIVE"],
+    ["PRODUCT", "WebGL"]
+];
+const YEARS = ["2026", "2025", "2024"];
 
 interface HomeClientProps {
     imagePromise: Promise<GalleryImage[]>;
 }
 
-/**
- * Main client-side gallery container.
- * 
- * Performance tuning:
- * - Local state `localSelectedImage` provides 0ms response on click.
- * - Entirely Single-Page architecture without navigation lag.
- */
 export default function HomeClient({ imagePromise }: HomeClientProps) {
     const allImages = use(imagePromise);
 
-    // ── Local State for Instant UI ──────────────────────────────────────────
-    // Strictly in-memory state. Address bar never changes.
-    const [localSelectedImage, setLocalSelectedImage] = useState<GalleryImage | null>(null);
+    // ── Navigation & In-Memory State ─────────────────────────────────────────
+    const [selectedProject, setSelectedProject] = useState<GalleryImage | null>(null);
+    const [selectedMetadata, setSelectedMetadata] = useState<{
+        brand: string;
+        title: string;
+        tags: string[];
+        year: string;
+    } | null>(null);
 
-    const [setsCount, setSetsCount] = useState(1);
-    const [isPending, startTransition] = useTransition();
-    const deferredSetsCount = useDeferredValue(setsCount);
-    const observerTarget = useRef<HTMLDivElement>(null);
+    // ── Layout Toggles (Grid vs List) ────────────────────────────────────────
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-    // ── Hi-Res Prefetch (use() + Suspense pattern) ──────────────────────────
-    const [activeHiResPromise, setActiveHiResPromise] = useState<Promise<string> | null>(null);
-    const [isHiResPending, startHiResTransition] = useTransition();
-    const hiResCacheRef = useRef(new Map<string, Promise<string>>());
+    // ── Local Time HUD (London & Auckland) ──────────────────────────────────
+    const [londonTime, setLondonTime] = useState("");
+    const [aucklandTime, setAucklandTime] = useState("");
 
-    const getOrCreateHiResPromise = useCallback((src: string): Promise<string> => {
-        const cache = hiResCacheRef.current;
-        if (!cache.has(src)) {
-            cache.set(
-                src,
-                new Promise<string>((resolve) => {
-                    const img = new window.Image();
-                    img.onload = () => resolve(src);
-                    img.onerror = () => resolve(src);
-                    img.src = src;
-                })
-            );
-        }
-        return cache.get(src)!;
+    // ── List View Hover Floating Thumbnail State ─────────────────────────────
+    const [floatingProject, setFloatingProject] = useState<{
+        img: GalleryImage;
+        title: string;
+    } | null>(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const updateTimes = () => {
+            const timeOptions: Intl.DateTimeFormatOptions = {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            };
+            const lTime = new Intl.DateTimeFormat("en-GB", {
+                ...timeOptions,
+                timeZone: "Europe/London",
+            }).format(new Date());
+            const aTime = new Intl.DateTimeFormat("en-GB", {
+                ...timeOptions,
+                timeZone: "Pacific/Auckland",
+            }).format(new Date());
+
+            setLondonTime(lTime);
+            setAucklandTime(aTime);
+        };
+
+        updateTimes();
+        const interval = setInterval(updateTimes, 1000);
+        return () => clearInterval(interval);
     }, []);
 
-    /** Warm the cache on hover — no state update, just background prefetch. */
-    const handleImageHover = useCallback((img: GalleryImage) => {
-        getOrCreateHiResPromise(img.src);
-    }, [getOrCreateHiResPromise]);
-
-    const [isHeaderCentered, setIsHeaderCentered] = useState(true);
-
-    const { set1Images, set2Images } = useMemo(() => {
-        const mid = Math.ceil(allImages.length / 2);
-        return {
-            set1Images: allImages.slice(0, mid),
-            set2Images: allImages.slice(mid),
-        };
+    // Generate projects mapping (same metadata structure as in ThreeGallery)
+    const projects = useMemo(() => {
+        return allImages.map((img, idx) => {
+            const brand = BRANDS[idx % BRANDS.length];
+            const title = TITLES[idx % TITLES.length];
+            const tags = TAGS_POOL[idx % TAGS_POOL.length];
+            const year = YEARS[idx % YEARS.length];
+            return {
+                img,
+                brand,
+                title,
+                tags,
+                year,
+            };
+        });
     }, [allImages]);
 
-    const handleImageClick = useCallback((img: GalleryImage) => {
-        setLocalSelectedImage(img);
-        setActiveHiResPromise(getOrCreateHiResPromise(img.src));
-        // Prefetch adjacent images for instant lightbox navigation
-        const idx = allImages.findIndex(i => i.id === img.id);
-        const nextImg = allImages[(idx + 1) % allImages.length];
-        const prevImg = allImages[(idx - 1 + allImages.length) % allImages.length];
-        getOrCreateHiResPromise(nextImg.src);
-        getOrCreateHiResPromise(prevImg.src);
-    }, [getOrCreateHiResPromise, allImages]);
-
-    const handleCloseLightbox = useCallback(() => {
-        setLocalSelectedImage(null);
-        setActiveHiResPromise(null);
-    }, []);
-
-    const handleNext = useCallback(() => {
-        if (!localSelectedImage) return;
-        const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
-        const nextImg = allImages[(idx + 1) % allImages.length];
-        // startTransition: current image stays visible while next loads
-        startHiResTransition(() => {
-            setLocalSelectedImage(nextImg);
-            setActiveHiResPromise(getOrCreateHiResPromise(nextImg.src));
-        });
-        // Prefetch one ahead for instant forward navigation
-        const nextNextImg = allImages[(idx + 2) % allImages.length];
-        getOrCreateHiResPromise(nextNextImg.src);
-    }, [allImages, localSelectedImage, startHiResTransition, getOrCreateHiResPromise]);
-
-    const handlePrev = useCallback(() => {
-        if (!localSelectedImage) return;
-        const idx = allImages.findIndex(i => i.id === localSelectedImage.id);
-        const prevImg = allImages[(idx - 1 + allImages.length) % allImages.length];
-        // startTransition: current image stays visible while prev loads
-        startHiResTransition(() => {
-            setLocalSelectedImage(prevImg);
-            setActiveHiResPromise(getOrCreateHiResPromise(prevImg.src));
-        });
-        // Prefetch one behind for instant backward navigation
-        const prevPrevImg = allImages[(idx - 2 + allImages.length) % allImages.length];
-        getOrCreateHiResPromise(prevPrevImg.src);
-    }, [allImages, localSelectedImage, startHiResTransition, getOrCreateHiResPromise]);
-
-    // Header drop: center → top, timed to match PageLoader fade-out.
-    useEffect(() => {
-        console.log("HomeClient mounted, starting 3.2s header drop timer");
-        const timer = setTimeout(() => {
-            console.log("Setting isHeaderCentered to false");
-            setIsHeaderCentered(false);
-        }, 3200);
-        return () => clearTimeout(timer);
-    }, []);
-
-    // Infinite-scroll trigger: wrapped in startTransition so appending new
-    // marquee sets never blocks existing CSS animations.
-    const loadMore = useCallback(
-        (entries: IntersectionObserverEntry[]) => {
-            if (entries[0].isIntersecting) {
-                startTransition(() => setSetsCount((prev) => prev + 1));
+    // Group projects by Year for the List View
+    const groupedProjectsByYear = useMemo(() => {
+        const groups: { [key: string]: typeof projects } = {};
+        projects.forEach((proj) => {
+            if (!groups[proj.year]) {
+                groups[proj.year] = [];
             }
-        },
-        [startTransition]
-    );
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(loadMore, {
-            rootMargin: "200px",
-            threshold: 0.1,
+            groups[proj.year].push(proj);
         });
-        if (observerTarget.current) observer.observe(observerTarget.current);
-        return () => observer.disconnect();
-    }, [loadMore]);
+        // Sort years descending
+        return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+    }, [projects]);
+
+    // Click handler for WebGL Cards
+    const handleCardClick = useCallback((img: GalleryImage, metadata: any) => {
+        setSelectedMetadata({
+            brand: metadata.brand,
+            title: metadata.projectTitle,
+            tags: metadata.tags,
+            year: metadata.year,
+        });
+        setSelectedProject(img);
+    }, []);
+
+    // Click handler for list view items
+    const handleListProjectClick = (proj: typeof projects[number]) => {
+        setSelectedMetadata({
+            brand: proj.brand,
+            title: proj.title,
+            tags: proj.tags,
+            year: proj.year,
+        });
+        setSelectedProject(proj.img);
+    };
+
+    // Tracking mouse movements for floating preview thumbnail in list view
+    const handleListMouseMove = (e: React.MouseEvent) => {
+        setMousePos({ x: e.clientX, y: e.clientY });
+    };
 
     return (
-        <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden cursor-none">
+        <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden cursor-none relative font-sans">
             <PageLoader />
             <CustomCursor />
 
-            {/*
-             * Gallery renders immediately on mount — PageLoader (z-[100]) overlays
-             * it for 3s. When the loader fades out the gallery is already rendered
-             * and in its final `opacity: 1` state, giving an instant reveal.
-             */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-                {/* ── Header ─────────────────────────────────────────── */}
-                <header
-                    className={`fixed top-0 left-0 w-full z-50 px-8 mix-blend-difference pointer-events-none transition-all duration-1000 ease-in-out flex justify-center items-center ${
-                        isHeaderCentered ? "h-screen py-12" : "h-64 py-12"
-                    } ${localSelectedImage ? "opacity-0 scale-95" : "opacity-100 scale-100"}`}
-                >
-                    <motion.h1
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
-                        className="text-8xl md:text-9xl font-black tracking-tighter uppercase origin-center"
+            {/* ── 1. Agency Header HUD ───────────────────────────────────────── */}
+            <header className="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-8 mix-blend-difference pointer-events-none flex justify-between items-center text-[10px] font-mono tracking-widest uppercase">
+                {/* Logo & Name */}
+                <div className="flex items-center gap-3 pointer-events-auto">
+                    {/* Camera Aperture / Radial HUD Mascot SVG */}
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="text-white animate-[spin_12s_linear_infinite]"
                     >
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.2" />
+                        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.2" />
+                        <path d="M12 2V6M12 18V22M2 12H6M18 12H22" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                    </svg>
+                    <span className="font-black text-xs font-sans tracking-tighter">
                         clicks
-                    </motion.h1>
-                </header>
+                    </span>
+                </div>
 
-                {/* ── Marquee section ─────────────────────────────────── */}
-                <section
-                    className={`pt-72 pb-48 space-y-24 transition-all duration-[1500ms] ease-in-out ${
-                        localSelectedImage
-                            ? "opacity-20 blur-md scale-[0.95]"
-                            : "opacity-100 blur-0 scale-100"
-                    }`}
-                >
-                    {Array.from({ length: deferredSetsCount }).map((_, i) => (
-                        <motion.div
-                            key={`set-${i}`}
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                                duration: 2,
-                                delay: 0.5 + i * 0.3,
-                                ease: [0.22, 1, 0.36, 1],
-                            }}
-                            className="space-y-24"
-                        >
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.1 }}
-                            >
-                                <InfiniteMarquee
-                                    direction={i % 2 === 0 ? "left" : "right"}
-                                    speed={30 + i}
-                                    images={i % 2 === 0 ? set1Images : set2Images}
-                                    isPaused={!!localSelectedImage}
-                                    onImageClick={handleImageClick}
-                                    onImageHover={handleImageHover}
-                                />
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.3 }}
-                            >
-                                <InfiniteMarquee
-                                    direction={i % 2 === 0 ? "right" : "left"}
-                                    speed={35 - i}
-                                    images={i % 2 === 0 ? set2Images : set1Images}
-                                    isPaused={!!localSelectedImage}
-                                    onImageClick={handleImageClick}
-                                    onImageHover={handleImageHover}
-                                />
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1], delay: 0.5 }}
-                            >
-                                <InfiniteMarquee
-                                    direction={i % 2 === 0 ? "left" : "right"}
-                                    speed={25 + i * 2}
-                                    images={i % 2 === 0 ? set1Images : set2Images}
-                                    isPaused={!!localSelectedImage}
-                                    onImageClick={handleImageClick}
-                                    onImageHover={handleImageHover}
-                                />
-                            </motion.div>
-                        </motion.div>
-                    ))}
+                {/* Central Statement (hidden on mobile) */}
+                <div className="hidden md:block text-zinc-500 font-medium">
+                    Creative Portfolio &bull; Imagining Spatial Dimensions
+                </div>
 
-                    {/* Infinite-scroll trigger */}
-                    <div
-                        ref={observerTarget}
-                        className="h-20 w-full flex justify-center items-center"
-                    >
-                        {/* Turns purple while startTransition is in-flight */}
-                        <div
-                            className={`w-1 h-1 rounded-full transition-colors duration-500 animate-ping ${
-                                isPending ? "bg-purple-500" : "bg-white/20"
-                            }`}
-                        />
+                {/* Office Clock & CTA */}
+                <div className="flex items-center gap-6 pointer-events-auto">
+                    <div className="hidden lg:flex items-center gap-4 text-zinc-500">
+                        <span>LDN {londonTime || "--:--:--"}</span>
+                        <span className="text-zinc-700">|</span>
+                        <span>AKL {aucklandTime || "--:--:--"}</span>
                     </div>
-                </section>
+                    <a
+                        href="mailto:hello@clicks.gallery"
+                        className="px-4 py-2 border border-white rounded-full bg-white text-black hover:bg-black hover:text-white transition-all duration-300 font-bold"
+                    >
+                        Let&apos;s talk
+                    </a>
+                </div>
+            </header>
 
-                {/* 
-                 * LOCAL LIGHTBOX: Single-Page Experience
-                 * All lightbox state is entirely in-memory for instant response.
-                 */}
-                <Lightbox 
-                    image={localSelectedImage} 
-                    onClose={handleCloseLightbox} 
-                    onNext={handleNext}
-                    onPrev={handlePrev}
-                    hiResPromise={activeHiResPromise}
-                    isNavigating={isHiResPending}
-                />
+            {/* ── 2. Gallery Canvas & Views Container ───────────────────────── */}
+            <div className="w-screen h-screen relative bg-black">
+                <AnimatePresence mode="wait">
+                    {viewMode === "grid" ? (
+                        /* WebGL 3D Sphere Grid View */
+                        <motion.div
+                            key="grid-view"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="w-full h-full"
+                        >
+                            <ThreeGallery
+                                images={allImages}
+                                selectedImage={selectedProject}
+                                onCardClick={handleCardClick}
+                            />
+                        </motion.div>
+                    ) : (
+                        /* Minimalist List View */
+                        <motion.div
+                            key="list-view"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="w-full min-h-screen pt-36 pb-32 overflow-y-auto px-6 md:px-12 select-none"
+                            onMouseMove={handleListMouseMove}
+                        >
+                            <div className="max-w-6xl mx-auto space-y-20">
+                                {groupedProjectsByYear.map(([year, yearProjects]) => (
+                                    <div key={year} className="space-y-6">
+                                        {/* Year Header */}
+                                        <div className="border-t border-white/10 pt-4 flex justify-between items-baseline">
+                                            <span className="text-sm font-mono tracking-widest text-zinc-500">
+                                                / {year}
+                                            </span>
+                                            <span className="text-[10px] font-mono tracking-widest text-zinc-600 uppercase">
+                                                {yearProjects.length} projects completed
+                                            </span>
+                                        </div>
 
-                {/* ── Footer ─────────────────────────────────────────── */}
-                <footer className="py-24 border-t border-white/5 text-center text-zinc-600 text-[10px] tracking-[0.3em] uppercase">
-                    &copy; {new Date().getFullYear()} Clicks Gallery &bull; Minimal Immersive Experience
-                </footer>
-            </motion.div>
+                                        {/* Projects Table */}
+                                        <div className="divide-y divide-white/5 font-mono text-[11px] tracking-wider uppercase text-zinc-400">
+                                            {yearProjects.map((proj) => (
+                                                <div
+                                                    key={`${proj.img.id}-${proj.brand}`}
+                                                    onClick={() => handleListProjectClick(proj)}
+                                                    onMouseEnter={() => setFloatingProject({ img: proj.img, title: proj.title })}
+                                                    onMouseLeave={() => setFloatingProject(null)}
+                                                    data-cursor="view"
+                                                    className="py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 cursor-pointer hover:text-white transition-colors group relative"
+                                                >
+                                                    {/* Left Spec */}
+                                                    <div className="flex items-center gap-6">
+                                                        <span className="text-zinc-600 w-8">
+                                                            {String(proj.img.id).padStart(2, "0")}
+                                                        </span>
+                                                        <span className="text-white font-bold group-hover:translate-x-2 transition-transform duration-300">
+                                                            {proj.brand}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Center title */}
+                                                    <div className="text-zinc-500 group-hover:text-zinc-300 transition-colors md:pl-20">
+                                                        {proj.title}
+                                                    </div>
+
+                                                    {/* Right Spec */}
+                                                    <div className="text-zinc-500 text-[10px] tracking-[0.2em] font-light">
+                                                        {proj.tags.join(" // ")}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* ── 3. Floating Preview Thumbnail (for List View) ────────────── */}
+            {floatingProject && viewMode === "list" && (
+                <div
+                    className="fixed w-48 h-64 pointer-events-none z-40 rounded-2xl overflow-hidden border border-white/10 bg-zinc-950 shadow-2xl transition-all duration-300 ease-out"
+                    style={{
+                        left: mousePos.x + 20,
+                        top: mousePos.y + 20,
+                        transform: "translate3d(0, 0, 0)",
+                    }}
+                >
+                    <Image
+                        src={floatingProject.img.src}
+                        alt={floatingProject.title}
+                        fill
+                        className="object-cover animate-[pulse_2s_infinite]"
+                        sizes="200px"
+                    />
+                </div>
+            )}
+
+            {/* ── 4. Project Specimen Details Overlay ───────────────────────── */}
+            <AnimatePresence>
+                {selectedProject && selectedMetadata && (
+                    <ProjectDetail
+                        image={selectedProject}
+                        brand={selectedMetadata.brand}
+                        projectTitle={selectedMetadata.title}
+                        tags={selectedMetadata.tags}
+                        year={selectedMetadata.year}
+                        onClose={() => {
+                            setSelectedProject(null);
+                            setSelectedMetadata(null);
+                        }}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* ── 5. Bottom View Mode Navigation Pill ────────────────────────── */}
+            <div
+                className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-500 ${
+                    selectedProject ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+                }`}
+            >
+                <div className="border border-white/10 rounded-full bg-black/60 backdrop-blur-md p-1.5 flex gap-2 font-mono text-[9px] tracking-widest uppercase text-zinc-400">
+                    <button
+                        onClick={() => setViewMode("grid")}
+                        className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
+                            viewMode === "grid"
+                                ? "bg-white text-black font-bold"
+                                : "hover:text-white"
+                        }`}
+                    >
+                        Grid 3D
+                    </button>
+                    <button
+                        onClick={() => setViewMode("list")}
+                        className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
+                            viewMode === "list"
+                                ? "bg-white text-black font-bold"
+                                : "hover:text-white"
+                        }`}
+                    >
+                        List Spec
+                    </button>
+                </div>
+            </div>
         </main>
     );
 }
