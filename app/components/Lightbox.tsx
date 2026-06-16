@@ -13,12 +13,7 @@ interface LightboxProps {
     onNext: () => void;
 }
 
-export default function Lightbox({
-    image,
-    onClose,
-    onPrev,
-    onNext,
-}: LightboxProps) {
+export default function Lightbox({ image, onClose, onPrev, onNext }: LightboxProps) {
     // Body scroll lock
     useEffect(() => {
         if (image) {
@@ -93,7 +88,7 @@ export default function Lightbox({
             </button>
 
             {/* Centered Image Container */}
-            <div 
+            <div
                 onClick={(e) => e.stopPropagation()}
                 className="relative w-full h-full max-w-[85vw] max-h-[80vh] flex items-center justify-center pointer-events-none"
             >

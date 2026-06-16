@@ -13,8 +13,16 @@ interface HomeClientProps {
 
 interface ShiftInfo {
     type: "row" | "col" | "diag";
-    index: number;      // Row (0-2), Col (0-2), or Diag (0 = main, 1 = anti)
-    direction: "left" | "right" | "up" | "down" | "up-left" | "down-right" | "up-right" | "down-left";
+    index: number; // Row (0-2), Col (0-2), or Diag (0 = main, 1 = anti)
+    direction:
+        | "left"
+        | "right"
+        | "up"
+        | "down"
+        | "up-left"
+        | "down-right"
+        | "up-right"
+        | "down-left";
 }
 
 interface MorphInfo {
@@ -49,7 +57,7 @@ function GridSlot({ image, borderRadius, isMorphing, onClick }: GridSlotProps) {
         <motion.div
             initial={{ borderRadius: "20px" }}
             animate={{
-                borderRadius: borderRadius
+                borderRadius: borderRadius,
             }}
             transition={{ duration: isMorphing ? 0.4 : 0.8, ease: "easeInOut" }}
             whileHover={{
@@ -68,8 +76,6 @@ function GridSlot({ image, borderRadius, isMorphing, onClick }: GridSlotProps) {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 priority
             />
-
-
         </motion.div>
     );
 }
@@ -109,15 +115,19 @@ const shiftDiag = (curr: GalleryImage[], index: number, dir: string): GalleryIma
 
 export default function HomeClient({ initialImages }: HomeClientProps) {
     const [selectedProject, setSelectedProject] = useState<GalleryImage | null>(null);
-    const [gridImages, setGridImages] = useState<GalleryImage[]>(() => padImages(initialImages, 12));
+    const [gridImages, setGridImages] = useState<GalleryImage[]>(() =>
+        padImages(initialImages, 12)
+    );
     const [shiftInfo, setShiftInfo] = useState<ShiftInfo | null>(null);
     const [morphInfo, setMorphInfo] = useState<MorphInfo | null>(null);
     const [shiftCount, setShiftCount] = useState(0);
 
     const getGlowColors = () => {
         const idx = shiftCount % 3;
-        if (idx === 0) return { color1: "rgba(168, 85, 247, 0.85)", color2: "rgba(59, 130, 246, 0.85)" }; // Purple / Blue
-        if (idx === 1) return { color1: "rgba(16, 185, 129, 0.85)", color2: "rgba(20, 184, 166, 0.85)" }; // Emerald / Teal
+        if (idx === 0)
+            return { color1: "rgba(168, 85, 247, 0.85)", color2: "rgba(59, 130, 246, 0.85)" }; // Purple / Blue
+        if (idx === 1)
+            return { color1: "rgba(16, 185, 129, 0.85)", color2: "rgba(20, 184, 166, 0.85)" }; // Emerald / Teal
         return { color1: "rgba(244, 63, 94, 0.85)", color2: "rgba(245, 158, 11, 0.85)" }; // Rose / Amber
     };
 
@@ -161,19 +171,29 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
             const r = Math.random();
             const shiftType = r < 0.4 ? "row" : r < 0.8 ? "col" : "diag";
 
-            const index = shiftType === "row" 
-                ? Math.floor(Math.random() * ROWS) 
-                : shiftType === "col" 
-                ? Math.floor(Math.random() * COLS) 
-                : Math.floor(Math.random() * 2);
+            const index =
+                shiftType === "row"
+                    ? Math.floor(Math.random() * ROWS)
+                    : shiftType === "col"
+                      ? Math.floor(Math.random() * COLS)
+                      : Math.floor(Math.random() * 2);
 
-            const direction = shiftType === "row"
-                ? (Math.random() > 0.5 ? "left" : "right")
-                : shiftType === "col"
-                ? (Math.random() > 0.5 ? "up" : "down")
-                : index === 0 
-                ? (Math.random() > 0.5 ? "up-left" : "down-right")
-                : (Math.random() > 0.5 ? "up-right" : "down-left");
+            const direction =
+                shiftType === "row"
+                    ? Math.random() > 0.5
+                        ? "left"
+                        : "right"
+                    : shiftType === "col"
+                      ? Math.random() > 0.5
+                          ? "up"
+                          : "down"
+                      : index === 0
+                        ? Math.random() > 0.5
+                            ? "up-left"
+                            : "down-right"
+                        : Math.random() > 0.5
+                          ? "up-right"
+                          : "down-left";
 
             if (shiftType === "diag") {
                 // Step 1: Trigger morphing shape (turns all to circle)
@@ -227,11 +247,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                             return next;
                         } else {
                             const next = [...curr];
-                            const colElements = [
-                                next[index],
-                                next[index + 4],
-                                next[index + 8],
-                            ];
+                            const colElements = [next[index], next[index + 4], next[index + 8]];
 
                             if (direction === "up") {
                                 const first = colElements.shift()!;
@@ -252,7 +268,6 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                     setShiftCount((prev) => prev + 1);
                 }, 1200);
             }
-
         }, 4000);
 
         return () => clearInterval(interval);
@@ -261,14 +276,18 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
     // Lightbox Prev / Next Handlers (cycle through the full list of images)
     const handlePrevPhoto = () => {
         if (!selectedProject || gridImages.length === 0) return;
-        const currentIndex = gridImages.findIndex((img) => img.pathname === selectedProject.pathname);
+        const currentIndex = gridImages.findIndex(
+            (img) => img.pathname === selectedProject.pathname
+        );
         const prevIndex = (currentIndex - 1 + gridImages.length) % gridImages.length;
         setSelectedProject(gridImages[prevIndex]);
     };
 
     const handleNextPhoto = () => {
         if (!selectedProject || gridImages.length === 0) return;
-        const currentIndex = gridImages.findIndex((img) => img.pathname === selectedProject.pathname);
+        const currentIndex = gridImages.findIndex(
+            (img) => img.pathname === selectedProject.pathname
+        );
         const nextIndex = (currentIndex + 1) % gridImages.length;
         setSelectedProject(gridImages[nextIndex]);
     };
@@ -398,10 +417,8 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
 
         if (shiftInfo.type === "row") {
             const isLeft = shiftInfo.direction === "left";
-            const imgIndex = isLeft 
-                ? shiftInfo.index * COLS 
-                : shiftInfo.index * COLS + (COLS - 1);
-            
+            const imgIndex = isLeft ? shiftInfo.index * COLS : shiftInfo.index * COLS + (COLS - 1);
+
             const image = gridImages[imgIndex];
             const left = isLeft ? "100%" : "-25%";
             const top = `${shiftInfo.index * 33.3333}%`;
@@ -409,9 +426,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
             return { image, left, top };
         } else if (shiftInfo.type === "col") {
             const isUp = shiftInfo.direction === "up";
-            const imgIndex = isUp
-                ? shiftInfo.index
-                : shiftInfo.index + (ROWS - 1) * COLS;
+            const imgIndex = isUp ? shiftInfo.index : shiftInfo.index + (ROWS - 1) * COLS;
 
             const image = gridImages[imgIndex];
             const left = `${shiftInfo.index * 25}%`;
@@ -476,7 +491,6 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                     }}
                     className="relative w-[96vw] aspect-[4/3] md:w-auto md:h-[75vh] overflow-hidden rounded-3xl border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-2xl select-none"
                 >
-                    
                     {/* Render the 12 standard cells */}
                     {gridImages.map((img, idx) => {
                         const col = idx % COLS;
@@ -533,18 +547,18 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                                 height: "33.3333%",
                             }}
                             initial={{
-                                scale: shiftInfo?.type === "diag" ? 0.707 : 1
+                                scale: shiftInfo?.type === "diag" ? 0.707 : 1,
                             }}
                             animate={getWrappingCellAnimation()}
                             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                             className="p-1.5 md:p-2"
                         >
-                            <motion.div 
+                            <motion.div
                                 initial={{
-                                    borderRadius: shiftInfo?.type === "diag" ? "50%" : "20px"
+                                    borderRadius: shiftInfo?.type === "diag" ? "50%" : "20px",
                                 }}
                                 animate={{
-                                    borderRadius: shiftInfo?.type === "diag" ? "50%" : "20px"
+                                    borderRadius: shiftInfo?.type === "diag" ? "50%" : "20px",
                                 }}
                                 transition={{ duration: 0.4, ease: "easeInOut" }}
                                 className="relative w-full h-full overflow-hidden rounded-[20px] border border-white/5 bg-zinc-950/20 shadow-2xl"
@@ -556,15 +570,11 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                                     sizes="(max-width: 768px) 50vw, 25vw"
                                     className="object-cover"
                                 />
-
                             </motion.div>
                         </motion.div>
                     )}
-
                 </motion.div>
             </section>
-
-
 
             {/* Lightbox details popup */}
             <AnimatePresence>

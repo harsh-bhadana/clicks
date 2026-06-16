@@ -16,7 +16,7 @@ function generateDefaultMetadata(pathname: string, id: number): PhotoMetadata {
     const nameClean = pathname
         .replace("gallery/", "")
         .replace(/\.(jpg|jpeg|png|webp|heic|avif)$/i, "");
-    
+
     // Category mapping based on ID for visual diversity
     const categories = ["Street", "Landscape", "Travel", "Minimal", "Portrait"];
     const category = categories[id % categories.length];
@@ -24,10 +24,21 @@ function generateDefaultMetadata(pathname: string, id: number): PhotoMetadata {
     const cameras = ["Sony A7IV", "Fujifilm X-T5", "iPhone 15 Pro", "Canon R6 Mark II"];
     const camera = cameras[id % cameras.length];
 
-    const lenses = ["35mm f/1.4 Prime", "50mm f/1.2 G-Master", "24-70mm f/2.8 Zoom", "18-55mm f/2.8-4.0"];
+    const lenses = [
+        "35mm f/1.4 Prime",
+        "50mm f/1.2 G-Master",
+        "24-70mm f/2.8 Zoom",
+        "18-55mm f/2.8-4.0",
+    ];
     const lens = lenses[id % lenses.length];
 
-    const locations = ["Kyoto, Japan", "London, UK", "New York City, USA", "Auckland, New Zealand", "Berlin, Germany"];
+    const locations = [
+        "Kyoto, Japan",
+        "London, UK",
+        "New York City, USA",
+        "Auckland, New Zealand",
+        "Berlin, Germany",
+    ];
     const location = locations[id % locations.length];
 
     const dates = ["Spring 2024", "Winter 2025", "Summer 2024", "Autumn 2025"];
@@ -81,7 +92,7 @@ export const getImages = unstable_cache(
             .map((blob, index) => {
                 const id = parseInt(blob.pathname.match(/\d+/)?.[0] || String(index + 1));
                 const customMetadata = metadataMap[blob.pathname];
-                const finalMetadata = customMetadata 
+                const finalMetadata = customMetadata
                     ? { ...generateDefaultMetadata(blob.pathname, id), ...customMetadata }
                     : generateDefaultMetadata(blob.pathname, id);
 

@@ -30,20 +30,23 @@ For more detailed information on how Clicks is built, check out the following:
 To run the gallery locally, you will need to set up Vercel Blob storage for the images.
 
 1. **Install dependencies**:
+
 ```bash
 npm install
 ```
 
 2. **Configure Environment Variables**:
-Create a `.env` file in the root directory and add your Vercel Blob read/write token:
+   Create a `.env` file in the root directory and add your Vercel Blob read/write token:
+
 ```env
 BLOB_READ_WRITE_TOKEN="your_vercel_blob_token_here"
 ```
 
 3. **Set up Storage**:
-Upload your high-resolution photography to your Vercel Blob store. Ensure the files have the `gallery/` prefix (e.g., `gallery/click_1.jpg`).
+   Upload your high-resolution photography to your Vercel Blob store. Ensure the files have the `gallery/` prefix (e.g., `gallery/click_1.jpg`).
 
 4. **Run the development server**:
+
 ```bash
 npm run dev
 ```
@@ -53,13 +56,16 @@ Open [http://localhost:3000](http://localhost:3000) to view the experience.
 ## 🚀 Deployment
 
 The easiest way to deploy this application is via Vercel:
+
 1. Push your code to a Git repository (GitHub, GitLab, or BitBucket).
 2. Import the project into Vercel.
 3. Configure the `BLOB_READ_WRITE_TOKEN` environment variable in your project settings.
 4. Deploy!
 
 ## 📸 Photography
+
 This project serves as a digital home for my personal photography, captured and curated with care.
 
 ---
-*Built with passion for photography and high-end web experiences.*
+
+_Built with passion for photography and high-end web experiences._

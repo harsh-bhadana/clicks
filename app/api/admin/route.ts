@@ -78,7 +78,10 @@ export async function POST(request: Request) {
         if (action === "deleteImage") {
             const { url } = body;
             if (!url) {
-                return NextResponse.json({ error: "URL is required for deletion" }, { status: 400 });
+                return NextResponse.json(
+                    { error: "URL is required for deletion" },
+                    { status: 400 }
+                );
             }
 
             await del(url);

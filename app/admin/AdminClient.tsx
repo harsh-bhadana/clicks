@@ -3,9 +3,21 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { 
-    Camera, MapPin, Calendar, Compass, Lock, LogOut, ArrowLeft, 
-    UploadCloud, Trash2, Edit, Save, RefreshCw, CheckCircle, AlertCircle 
+import {
+    Camera,
+    MapPin,
+    Calendar,
+    Compass,
+    Lock,
+    LogOut,
+    ArrowLeft,
+    UploadCloud,
+    Trash2,
+    Edit,
+    Save,
+    RefreshCw,
+    CheckCircle,
+    AlertCircle,
 } from "lucide-react";
 import exifr from "exifr";
 import type { GalleryImage, PhotoMetadata } from "../types";
@@ -37,7 +49,7 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
     // Image/Gallery states
     const [images, setImages] = useState<GalleryImage[]>(initialImages);
     const [editingImage, setEditingImage] = useState<GalleryImage | null>(null);
-    
+
     // Upload Form states
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState("");
@@ -57,7 +69,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
     const [formPalette, setFormPalette] = useState<string[]>(COLOR_PALETTES[0].colors);
 
     // Toast/Feedback state
-    const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+    const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(
+        null
+    );
     const [saving, setSaving] = useState(false);
 
     // Check auth on load
@@ -218,7 +232,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 if (data.Model) {
                     const make = data.Make ? data.Make.trim() : "";
                     const model = data.Model.trim();
-                    setFormCamera(model.toLowerCase().includes(make.toLowerCase()) ? model : `${make} ${model}`);
+                    setFormCamera(
+                        model.toLowerCase().includes(make.toLowerCase())
+                            ? model
+                            : `${make} ${model}`
+                    );
                 }
                 if (data.LensModel) setFormLens(data.LensModel);
                 if (data.FNumber) setFormAperture(`f/${data.FNumber}`);
@@ -229,7 +247,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 if (data.ISO) setFormIso(String(data.ISO));
                 if (data.DateTimeOriginal) {
                     const dateObj = new Date(data.DateTimeOriginal);
-                    setFormDate(dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" }));
+                    setFormDate(
+                        dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+                    );
                 }
 
                 // Default title
@@ -272,12 +292,14 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             // Successfully uploaded image
             const newImage: GalleryImage = {
                 src: data.url,
-                id: Math.max(...images.map(i => i.id), 0) + 1,
+                id: Math.max(...images.map((i) => i.id), 0) + 1,
                 pathname: data.pathname,
                 metadata: {
                     title: formTitle || file.name.split(".")[0].replace(/[_-]/g, " "),
                     location: formLocation || "Unknown Location",
-                    date: formDate || new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+                    date:
+                        formDate ||
+                        new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
                     category: formCategory,
                     camera: formCamera || "Unknown Camera",
                     lens: formLens || "Unknown Lens",
@@ -286,7 +308,7 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                     iso: formIso || "100",
                     story: formStory || "A new addition to the clicks photography collection.",
                     colorPalette: formPalette,
-                }
+                },
             };
 
             // Save new images array
@@ -331,7 +353,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
 
     // Handle Delete
     const handleDeleteImage = async (img: GalleryImage) => {
-        if (!confirm(`Are you sure you want to delete "${img.metadata?.title || 'this image'}"? This will delete the file from Vercel Blob store permanently.`)) {
+        if (
+            !confirm(
+                `Are you sure you want to delete "${img.metadata?.title || "this image"}"? This will delete the file from Vercel Blob store permanently.`
+            )
+        ) {
             return;
         }
 
@@ -350,7 +376,7 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             }
 
             // 2. Remove from list and save metadata.json
-            const updatedImages = images.filter(i => i.pathname !== img.pathname);
+            const updatedImages = images.filter((i) => i.pathname !== img.pathname);
             await handleSaveMetadata(updatedImages);
 
             if (editingImage?.pathname === img.pathname) {
@@ -379,15 +405,38 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-neutral-950 px-6 py-12">
                 {/* Visual Backdrop Effects */}
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.06),transparent_60%)]" />
-                
+
                 <div className="relative w-full max-w-md rounded-3xl border border-white/5 bg-neutral-900/60 p-8 backdrop-blur-xl shadow-2xl">
                     <div className="flex flex-col items-center text-center">
                         {/* Rotating Aperture Logo */}
                         <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 mb-6 text-purple-400">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="animate-[spin_16s_linear_infinite]">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.2" />
-                                <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.2" />
-                                <path d="M12 2V6M12 18V22M2 12H6M18 12H22" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className="animate-[spin_16s_linear_infinite]"
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="1.2"
+                                />
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="4"
+                                    stroke="currentColor"
+                                    strokeWidth="1.2"
+                                />
+                                <path
+                                    d="M12 2V6M12 18V22M2 12H6M18 12H22"
+                                    stroke="currentColor"
+                                    strokeWidth="1.2"
+                                    strokeLinecap="round"
+                                />
                             </svg>
                         </div>
 
@@ -431,7 +480,10 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <Link href="/" className="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors uppercase tracking-widest">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors uppercase tracking-widest"
+                        >
                             <ArrowLeft className="h-3 w-3" /> Back to Gallery
                         </Link>
                     </div>
@@ -449,13 +501,19 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <div>
                         <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                            clicks <span className="text-[10px] font-mono text-neutral-500 border border-white/10 px-2 py-0.5 rounded-full uppercase tracking-wider">CMS Console</span>
+                            clicks{" "}
+                            <span className="text-[10px] font-mono text-neutral-500 border border-white/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                CMS Console
+                            </span>
                         </h1>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <Link href="/" className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white transition-all bg-neutral-900 border border-white/5 px-4 py-2 rounded-full">
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white transition-all bg-neutral-900 border border-white/5 px-4 py-2 rounded-full"
+                    >
                         <ArrowLeft className="h-3.5 w-3.5" /> Back to Gallery
                     </Link>
                     <button
@@ -469,22 +527,26 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
 
             {/* Toast Feedbacks */}
             {feedback && (
-                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl backdrop-blur-xl border ${
-                    feedback.type === "success" 
-                        ? "bg-emerald-950/80 border-emerald-500/20 text-emerald-300"
-                        : "bg-red-950/80 border-red-500/20 text-red-300"
-                }`}>
-                    {feedback.type === "success" ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+                <div
+                    className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl backdrop-blur-xl border ${
+                        feedback.type === "success"
+                            ? "bg-emerald-950/80 border-emerald-500/20 text-emerald-300"
+                            : "bg-red-950/80 border-red-500/20 text-red-300"
+                    }`}
+                >
+                    {feedback.type === "success" ? (
+                        <CheckCircle className="h-5 w-5" />
+                    ) : (
+                        <AlertCircle className="h-5 w-5" />
+                    )}
                     <span className="text-xs font-mono tracking-wider">{feedback.msg}</span>
                 </div>
             )}
 
             {/* Layout Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 items-start">
-                
                 {/* LEFT SIDE: UPLOADER & EDIT FORM */}
                 <div className="lg:col-span-5 space-y-8">
-                    
                     {/* Drag-and-Drop Zone */}
                     <div className="rounded-3xl border border-white/5 bg-neutral-900/40 p-6 backdrop-blur-md">
                         <h2 className="text-sm font-bold tracking-tight text-white mb-4 flex items-center gap-2">
@@ -497,8 +559,8 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                             onDragOver={handleDrag}
                             onDrop={handleDrop}
                             className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                                dragActive 
-                                    ? "border-purple-500 bg-purple-500/5" 
+                                dragActive
+                                    ? "border-purple-500 bg-purple-500/5"
                                     : "border-white/10 bg-neutral-950/40 hover:border-white/20"
                             } ${uploading ? "pointer-events-none opacity-50" : ""}`}
                         >
@@ -509,7 +571,10 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                 onChange={handleFileInput}
                                 className="hidden"
                             />
-                            <label htmlFor="file-upload" className="cursor-pointer w-full h-full flex flex-col items-center justify-center">
+                            <label
+                                htmlFor="file-upload"
+                                className="cursor-pointer w-full h-full flex flex-col items-center justify-center"
+                            >
                                 <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center text-neutral-400 mb-3">
                                     {uploading ? (
                                         <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
@@ -528,7 +593,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                             {uploading && (
                                 <div className="absolute inset-0 bg-neutral-950/90 rounded-2xl flex flex-col items-center justify-center p-6 backdrop-blur-sm">
                                     <RefreshCw className="h-8 w-8 animate-spin text-purple-400 mb-3" />
-                                    <p className="text-xs font-mono text-zinc-300 uppercase tracking-widest">{uploadProgress}</p>
+                                    <p className="text-xs font-mono text-zinc-300 uppercase tracking-widest">
+                                        {uploadProgress}
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -536,7 +603,10 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
 
                     {/* Metadata Edit Form */}
                     {editingImage ? (
-                        <form onSubmit={handleFormSubmit} className="rounded-3xl border border-white/5 bg-neutral-900/40 p-6 backdrop-blur-md space-y-5">
+                        <form
+                            onSubmit={handleFormSubmit}
+                            className="rounded-3xl border border-white/5 bg-neutral-900/40 p-6 backdrop-blur-md space-y-5"
+                        >
                             <div className="flex justify-between items-center border-b border-white/5 pb-3">
                                 <h2 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
                                     <Edit className="h-4 w-4 text-purple-400" /> Photo Settings
@@ -616,8 +686,10 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                             onChange={(e) => setFormCategory(e.target.value)}
                                             className="w-full rounded-xl border border-white/5 bg-neutral-950/80 pl-8 pr-3 py-2 text-xs text-white focus:border-purple-500/50 focus:outline-none appearance-none"
                                         >
-                                            {CATEGORIES.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
+                                            {CATEGORIES.map((cat) => (
+                                                <option key={cat} value={cat}>
+                                                    {cat}
+                                                </option>
                                             ))}
                                         </select>
                                         <Compass className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-600" />
@@ -713,7 +785,8 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                                 type="button"
                                                 onClick={() => setFormPalette(palette.colors)}
                                                 className={`p-1.5 rounded-lg border text-left flex flex-col justify-between h-12 transition-all cursor-pointer ${
-                                                    JSON.stringify(formPalette) === JSON.stringify(palette.colors)
+                                                    JSON.stringify(formPalette) ===
+                                                    JSON.stringify(palette.colors)
                                                         ? "border-purple-500 bg-purple-500/5"
                                                         : "border-white/5 bg-neutral-950/60 hover:border-white/10"
                                                 }`}
@@ -723,7 +796,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                                 </span>
                                                 <div className="flex gap-0.5 mt-1.5 w-full h-3 rounded overflow-hidden">
                                                     {palette.colors.map((c, i) => (
-                                                        <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                                                        <div
+                                                            key={i}
+                                                            className="flex-1"
+                                                            style={{ backgroundColor: c }}
+                                                        />
                                                     ))}
                                                 </div>
                                             </button>
@@ -749,7 +826,8 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                         <div className="rounded-3xl border border-white/5 bg-neutral-900/10 border-dashed p-8 text-center backdrop-blur-md">
                             <Edit className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
                             <p className="text-xs font-mono text-neutral-500 uppercase tracking-wider">
-                                Click Edit on any image card to update its camera specifications, locations, and descriptions.
+                                Click Edit on any image card to update its camera specifications,
+                                locations, and descriptions.
                             </p>
                         </div>
                     )}
@@ -774,8 +852,8 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                             <div
                                 key={img.pathname}
                                 className={`group relative rounded-xl border overflow-hidden transition-all duration-300 flex flex-col bg-neutral-950/80 ${
-                                    editingImage?.pathname === img.pathname 
-                                        ? "border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]" 
+                                    editingImage?.pathname === img.pathname
+                                        ? "border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
                                         : "border-white/5 hover:border-white/10"
                                 }`}
                             >
@@ -803,10 +881,12 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                         <h3 className="text-xs font-bold text-white truncate uppercase font-sans tracking-wide">
                                             {img.metadata?.title || "Untitled Click"}
                                         </h3>
-                                        
+
                                         <div className="flex items-center gap-1 text-[9px] font-mono text-neutral-500 mt-1">
                                             <MapPin className="h-2.5 w-2.5 shrink-0" />
-                                            <span className="truncate">{img.metadata?.location || "Unknown"}</span>
+                                            <span className="truncate">
+                                                {img.metadata?.location || "Unknown"}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -830,7 +910,6 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                         ))}
                     </div>
                 </div>
-
             </div>
         </div>
     );
