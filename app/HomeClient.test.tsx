@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { padImages, shiftDiag } from "./HomeClient";
+import { padImages, shiftDiag } from "@/app/lib/grid";
 import type { GalleryImage } from "./types";
 
 const mockImage = (id: number): GalleryImage => ({

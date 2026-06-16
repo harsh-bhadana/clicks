@@ -3,9 +3,9 @@ import { put, del } from "@vercel/blob";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "harsh2025bERSERK";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SESSION_COOKIE_NAME = "clicks_admin_session";
-const SESSION_TOKEN = "clicks_authorized_session_token_2026";
+const SESSION_TOKEN = crypto.randomUUID();
 
 // Helper to check if authorized
 async function isAuthorized() {

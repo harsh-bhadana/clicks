@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import PhotoInfo from "./PhotoInfo";
 import type { GalleryImage } from "../types";
 
 interface LightboxProps {
@@ -11,9 +12,25 @@ interface LightboxProps {
     onClose: () => void;
     onPrev: () => void;
     onNext: () => void;
+    /** Total number of images in the pool (for the counter). */
+    totalImages?: number;
+    /** Current 1-based index in the pool (for the counter). */
+    currentIndex?: number;
+    /** URLs of the previous and next images to preload. */
+    preloadUrls?: { prev?: string; next?: string };
 }
 
-export default function Lightbox({ image, onClose, onPrev, onNext }: LightboxProps) {
+export default function Lightbox({
+    image,
+    onClose,
+    onPrev,
+    onNext,
+    totalImages,
+    currentIndex,
+    preloadUrls,
+}: LightboxProps) {
+    const [showInfo, setShowInfo] = useState(false);
+
     // Body scroll lock
     useEffect(() => {
         if (image) {
@@ -33,12 +50,22 @@ export default function Lightbox({ image, onClose, onPrev, onNext }: LightboxPro
             if (e.key === "Escape") onClose();
             if (e.key === "ArrowLeft") onPrev();
             if (e.key === "ArrowRight") onNext();
+            if (e.key === "i" || e.key === "I") setShowInfo((prev) => !prev);
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [image, onClose, onPrev, onNext]);
 
+    // Reset info panel when image changes (ref-based to avoid setState in effect)
+    const prevImageIdRef = useRef(image?.id);
+    if (image?.id !== prevImageIdRef.current) {
+        prevImageIdRef.current = image?.id;
+        if (showInfo) setShowInfo(false);
+    }
+
     if (!image) return null;
+
+    const metadata = image.metadata || {};
 
     return (
         <motion.div
@@ -50,8 +77,28 @@ export default function Lightbox({ image, onClose, onPrev, onNext }: LightboxPro
             data-cursor="back"
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 backdrop-blur-2xl p-6 select-none cursor-pointer"
         >
-            {/* Top Close / Back Button */}
-            <header className="absolute top-0 right-0 z-10 px-8 py-8">
+            {/* Preload adjacent images */}
+            {preloadUrls?.prev && <link rel="preload" as="image" href={preloadUrls.prev} />}
+            {preloadUrls?.next && <link rel="preload" as="image" href={preloadUrls.next} />}
+
+            {/* Top bar: Info toggle + Close */}
+            <header className="absolute top-0 left-0 right-0 z-10 px-8 py-8 flex items-center justify-between pointer-events-none">
+                {/* Info toggle */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowInfo((prev) => !prev);
+                    }}
+                    data-cursor="info"
+                    className="pointer-events-auto flex items-center gap-2 text-[10px] font-mono tracking-[0.4em] text-zinc-400 hover:text-white uppercase transition-all duration-300 group cursor-pointer"
+                >
+                    <Info
+                        className={`h-4 w-4 transition-all duration-300 ${showInfo ? "text-white" : ""}`}
+                    />
+                    <span className="hidden sm:inline">{showInfo ? "Hide" : "Info"}</span>
+                </button>
+
+                {/* Close button */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -94,13 +141,23 @@ export default function Lightbox({ image, onClose, onPrev, onNext }: LightboxPro
             >
                 <Image
                     src={image.src}
-                    alt=""
+                    alt={metadata.title || "Photo"}
                     fill
                     className="object-contain"
                     priority
                     unoptimized
                 />
             </div>
+
+            {/* Image counter */}
+            {totalImages && currentIndex && (
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-[10px] font-mono tracking-[0.5em] text-zinc-600">
+                    {currentIndex} / {totalImages}
+                </div>
+            )}
+
+            {/* EXIF / Metadata overlay */}
+            <PhotoInfo metadata={metadata} isVisible={showInfo} />
         </motion.div>
     );
 }
