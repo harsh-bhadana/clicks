@@ -24,6 +24,24 @@ export const metadata: Metadata = {
     title: "Clicks | Immersive Photography Gallery",
     description:
         "A minimal, immersive photography gallery experience showcasing moments captured through the lens.",
+    metadataBase: new URL("https://clicks-gallery.vercel.app"),
+    openGraph: {
+        title: "Clicks | Immersive Photography Gallery",
+        description:
+            "A minimal, immersive photography gallery experience showcasing moments captured through the lens.",
+        type: "website",
+        siteName: "Clicks",
+        locale: "en_US",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Clicks | Immersive Photography Gallery",
+        description:
+            "A minimal, immersive photography gallery experience showcasing moments captured through the lens.",
+    },
+    icons: {
+        icon: "/favicon.svg",
+    },
 };
 
 /**
