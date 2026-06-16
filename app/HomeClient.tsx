@@ -11,6 +11,7 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import PageLoader from "./components/PageLoader";
 import CustomCursor from "./components/CustomCursor";
 import ThreeGallery from "./components/ThreeGallery";
 import ProjectDetail from "./components/ProjectDetail";
@@ -152,6 +153,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
 
     return (
         <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-x-hidden cursor-none relative font-sans">
+            <PageLoader images={allImages} />
             <CustomCursor />
 
             {/* ── 1. Agency Header HUD ───────────────────────────────────────── */}

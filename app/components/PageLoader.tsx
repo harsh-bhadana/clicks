@@ -23,8 +23,8 @@ export default function PageLoader({ images = [] }: PageLoaderProps) {
         document.body.classList.add("no-scroll");
 
         let current = 0;
-        const duration = 2800; // 2.8s total loading sweep
-        const stepTime = 40;
+        const duration = 1000; // 1s total loading sweep
+        const stepTime = 20; // 20ms steps for smoother counting at high speed
         const totalSteps = duration / stepTime;
 
         const interval = setInterval(() => {
@@ -32,11 +32,11 @@ export default function PageLoader({ images = [] }: PageLoaderProps) {
             if (current >= 100) {
                 current = 100;
                 clearInterval(interval);
-                // Leave a tiny gap of 400ms for visual finish before unmounting loader
+                // Leave a tiny gap of 100ms for visual finish before unmounting loader
                 setTimeout(() => {
                     setIsVisible(false);
                     document.body.classList.remove("no-scroll");
-                }, 400);
+                }, 100);
             }
             setProgress(Math.floor(current));
         }, stepTime);
@@ -98,7 +98,7 @@ export default function PageLoader({ images = [] }: PageLoaderProps) {
                                 initial={{ x: "100vw" }}
                                 animate={{ x: "-100%" }}
                                 transition={{
-                                    duration: 2.8,
+                                    duration: 1.0,
                                     ease: [0.25, 1, 0.5, 1], // Smooth cubic-bezier deceleration
                                 }}
                                 className="flex items-center gap-12 md:gap-16 px-12"
