@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
-import { Lock, MapPin } from "lucide-react";
 import CustomCursor from "./components/CustomCursor";
 import Lightbox from "./components/Lightbox";
 import type { GalleryImage } from "./types";
@@ -35,34 +33,6 @@ const padImages = (imgs: GalleryImage[], targetCount = 12): GalleryImage[] => {
         result.push(...imgs);
     }
     return result.slice(0, targetCount);
-};
-
-// Helper: initial/exit translation variants based on direction
-const getVariants = (direction: string) => {
-    switch (direction) {
-        case "up":
-            return {
-                exit: { y: "-100%", x: 0 },
-                enter: { y: "100%", x: 0 },
-            };
-        case "down":
-            return {
-                exit: { y: "100%", x: 0 },
-                enter: { y: "-100%", x: 0 },
-            };
-        case "left":
-            return {
-                exit: { x: "-100%", y: 0 },
-                enter: { x: "100%", y: 0 },
-            };
-        case "right":
-            return {
-                exit: { x: "100%", y: 0 },
-                enter: { x: "-100%", y: 0 },
-            };
-        default:
-            return { exit: { x: 0, y: 0 }, enter: { x: 0, y: 0 } };
-    }
 };
 
 interface GridSlotProps {
