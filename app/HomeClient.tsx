@@ -492,7 +492,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
     const wrappingCell = getWrappingCell();
 
     return (
-        <main className="min-h-screen bg-black text-white selection:bg-purple-500/30 overflow-y-auto cursor-none relative font-sans flex flex-col justify-between">
+        <main className="w-screen h-screen bg-black text-white selection:bg-purple-500/30 overflow-hidden cursor-none relative font-sans flex items-center justify-center">
             <CustomCursor />
 
             {/* Ambient background glows */}
@@ -515,45 +515,8 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                 className="absolute bottom-1/4 right-1/4 translate-y-1/2 w-[50vw] h-[40vh] rounded-full blur-[140px] pointer-events-none"
             />
 
-            {/* ── 1. HUD Header ────────────────────────────────────────────────── */}
-            <header className="w-full z-50 px-6 md:px-12 py-8 flex justify-between items-center text-[10px] font-mono tracking-widest uppercase border-b border-white/5 bg-zinc-950/40 backdrop-blur-md sticky top-0">
-                <div className="flex items-center gap-3">
-                    <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="text-white animate-[spin_18s_linear_infinite]"
-                    >
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.2" />
-                        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.2" />
-                        <path d="M12 2V6M12 18V22M2 12H6M18 12H22" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                    </svg>
-                    <span className="font-black text-xs font-sans tracking-tighter normal-case">
-                        clicks
-                    </span>
-                    <span className="text-[8px] text-zinc-500 border border-white/10 px-2 py-0.5 rounded-full ml-2">
-                        SLIDER
-                    </span>
-                </div>
-
-                <div className="hidden md:block text-zinc-500 font-medium tracking-[0.2em]">
-                    PHOTOGRAPHY SPECIMENS
-                </div>
-
-                <div>
-                    <Link
-                        href="/admin"
-                        className="px-4 py-2 border border-white/10 rounded-full bg-neutral-900/80 text-white hover:bg-white hover:text-black transition-all duration-300 font-bold flex items-center gap-1.5 text-[9px] uppercase tracking-wider"
-                    >
-                        <Lock className="h-3 w-3" /> Dashboard
-                    </Link>
-                </div>
-            </header>
-
-            {/* ── 2. Grid Content (Rubik's Absolute Layout) ─────────────────────── */}
-            <section className="flex-1 w-full px-6 py-4 flex items-center justify-center relative z-10">
+            {/* ── Grid Content (Rubik's Absolute Layout) ─────────────────────── */}
+            <section className="relative z-10 flex items-center justify-center">
                 <motion.div
                     animate={getGridContainerAnimation()}
                     transition={{
@@ -655,11 +618,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                 </motion.div>
             </section>
 
-            {/* ── 3. Footer ─────────────────────────────────────────────────── */}
-            <footer className="w-full z-40 px-6 md:px-12 py-8 border-t border-white/5 bg-zinc-950/40 backdrop-blur-sm flex justify-between items-center text-[8px] font-mono text-zinc-500 tracking-[0.25em] uppercase">
-                <span>clicks &bull; total of 12 frames active</span>
-                <span>row, column, or diagonal shifts every 4s</span>
-            </footer>
+
 
             {/* Lightbox details popup */}
             <AnimatePresence>
