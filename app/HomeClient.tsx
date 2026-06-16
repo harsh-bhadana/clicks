@@ -34,7 +34,7 @@ const COLS = 4;
 const ROWS = 3;
 
 // Helper to pad/loop images array to exactly 12 elements
-const padImages = (imgs: GalleryImage[], targetCount = 12): GalleryImage[] => {
+export const padImages = (imgs: GalleryImage[], targetCount = 12): GalleryImage[] => {
     if (imgs.length === 0) return [];
     const result = [...imgs];
     while (result.length < targetCount) {
@@ -81,7 +81,7 @@ function GridSlot({ image, borderRadius, isMorphing, onClick }: GridSlotProps) {
 }
 
 // Helper to shift diagonal elements in the array state
-const shiftDiag = (curr: GalleryImage[], index: number, dir: string): GalleryImage[] => {
+export const shiftDiag = (curr: GalleryImage[], index: number, dir: string): GalleryImage[] => {
     const next = [...curr];
     if (index === 0) {
         // Main diagonal: indices 0, 5, 10
