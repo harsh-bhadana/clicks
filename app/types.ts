@@ -1,8 +1,23 @@
+export interface PhotoMetadata {
+    title?: string;
+    location?: string;
+    date?: string;
+    category?: string;
+    camera?: string;
+    lens?: string;
+    aperture?: string;
+    shutterSpeed?: string;
+    iso?: string;
+    story?: string;
+    colorPalette?: string[];
+}
+
 export interface GalleryImage {
     src: string;
     /**
      * Stable numeric ID derived from the blob filename (click_1.jpg → 1).
-     * Used as the URL param for /photo/[id] routes.
      */
     id: number;
+    pathname: string;
+    metadata?: PhotoMetadata;
 }
