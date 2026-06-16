@@ -144,7 +144,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
         return false;
     };
 
-    const getCellBorderRadius = (col: number, row: number) => {
+    const getCellBorderRadius = () => {
         if (!morphInfo) return "20px";
         if (morphInfo.type === "diag") return "50%";
         return "20px";
@@ -528,7 +528,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                             >
                                 <GridSlot
                                     image={img}
-                                    borderRadius={getCellBorderRadius(col, row)}
+                                    borderRadius={getCellBorderRadius()}
                                     isMorphing={!!morphInfo}
                                     onClick={() => setSelectedProject(img)}
                                 />

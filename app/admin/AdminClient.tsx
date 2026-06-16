@@ -115,7 +115,7 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             } else {
                 setAuthError(data.error || "Login failed");
             }
-        } catch (err) {
+        } catch {
             setAuthError("Network error. Try again.");
         }
     };
@@ -180,8 +180,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 const data = await res.json();
                 throw new Error(data.error || "Save failed");
             }
-        } catch (err: any) {
-            setFeedback({ type: "error", msg: `Failed to save: ${err.message}` });
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            setFeedback({ type: "error", msg: `Failed to save: ${errorMsg}` });
         } finally {
             setSaving(false);
         }
@@ -317,8 +318,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
 
             // Open editing panel on this newly uploaded file to review
             handleStartEdit(newImage);
-        } catch (err: any) {
-            setFeedback({ type: "error", msg: `Upload failed: ${err.message}` });
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            setFeedback({ type: "error", msg: `Upload failed: ${errorMsg}` });
         } finally {
             setUploading(false);
             setUploadProgress("");
@@ -382,8 +384,9 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             if (editingImage?.pathname === img.pathname) {
                 setEditingImage(null);
             }
-        } catch (err: any) {
-            setFeedback({ type: "error", msg: `Delete failed: ${err.message}` });
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            setFeedback({ type: "error", msg: `Delete failed: ${errorMsg}` });
         } finally {
             setSaving(false);
         }

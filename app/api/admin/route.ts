@@ -93,8 +93,9 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-    } catch (err: any) {
+    } catch (err) {
         console.error("Error in admin API route:", err);
-        return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+        const errorMsg = err instanceof Error ? err.message : "Server error";
+        return NextResponse.json({ error: errorMsg }, { status: 500 });
     }
 }
