@@ -157,7 +157,9 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
             <CustomCursor />
 
             {/* ── 1. Agency Header HUD ───────────────────────────────────────── */}
-            <header className="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-8 mix-blend-difference pointer-events-none flex justify-between items-center text-[10px] font-mono tracking-widest uppercase">
+            <header className={`fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-8 mix-blend-difference pointer-events-none flex justify-between items-center text-[10px] font-mono tracking-widest uppercase transition-opacity duration-500 ${
+                selectedProject ? "opacity-0 pointer-events-none" : "opacity-100"
+            }`}>
                 {/* Logo & Name */}
                 <div className="flex items-center gap-3 pointer-events-auto">
                     {/* Camera Aperture / Radial HUD Mascot SVG */}
@@ -320,35 +322,7 @@ export default function HomeClient({ imagePromise }: HomeClientProps) {
                 )}
             </AnimatePresence>
 
-            {/* ── 5. Bottom View Mode Navigation Pill ────────────────────────── */}
-            <div
-                className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-500 ${
-                    selectedProject ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
-                }`}
-            >
-                <div className="border border-white/10 rounded-full bg-black/60 backdrop-blur-md p-1.5 flex gap-2 font-mono text-[9px] tracking-widest uppercase text-zinc-400">
-                    <button
-                        onClick={() => setViewMode("grid")}
-                        className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-                            viewMode === "grid"
-                                ? "bg-white text-black font-bold"
-                                : "hover:text-white"
-                        }`}
-                    >
-                        Grid 3D
-                    </button>
-                    <button
-                        onClick={() => setViewMode("list")}
-                        className={`px-4 py-1.5 rounded-full transition-all cursor-pointer ${
-                            viewMode === "list"
-                                ? "bg-white text-black font-bold"
-                                : "hover:text-white"
-                        }`}
-                    >
-                        List Spec
-                    </button>
-                </div>
-            </div>
+
         </main>
     );
 }
