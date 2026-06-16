@@ -99,28 +99,7 @@ function GridSlot({ image, borderRadius, isMorphing, onClick }: GridSlotProps) {
                 priority
             />
 
-            {/* Hover details overlay card (rendered on top) */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-10">
-                <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-3 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500 font-mono text-[9px] text-zinc-300 font-light">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-1 mb-1.5">
-                        <span className="text-white font-bold font-sans text-[11px] uppercase truncate pr-2">
-                            {meta.title || "Untitled Click"}
-                        </span>
-                        <span className="text-[7px] bg-purple-950/45 text-purple-300 border border-purple-500/25 px-1.5 py-0.5 rounded-full uppercase shrink-0">
-                            {meta.category || "Street"}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-zinc-400">
-                        <MapPin className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{meta.location || "Earth"}</span>
-                    </div>
-                </div>
-            </div>
 
-            {/* ID badge */}
-            <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 border border-white/10 text-[8px] font-mono text-zinc-400 tracking-wider z-10">
-                #{image.id}
-            </div>
         </motion.div>
     );
 }
@@ -607,10 +586,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                                     sizes="(max-width: 768px) 50vw, 25vw"
                                     className="object-cover"
                                 />
-                                {/* ID badge */}
-                                <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/60 border border-white/10 text-[8px] font-mono text-zinc-400 tracking-wider z-10">
-                                    #{wrappingCell.image.id}
-                                </div>
+
                             </motion.div>
                         </motion.div>
                     )}
