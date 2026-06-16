@@ -2,7 +2,7 @@
     "*.{js,jsx,ts,tsx}": [
         "prettier --write",
         "eslint --fix",
-        "vitest run --related --passWithNoTests"
+        "vitest related --run --passWithNoTests"
     ],
     "*.{json,css,md}": ["prettier --write"]
 }
