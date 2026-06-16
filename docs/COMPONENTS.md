@@ -2,58 +2,42 @@
 
 Detailed overview of the UI components powering the Clicks experience.
 
-## 🎞️ `InfiniteMarquee.tsx`
+## 🏠 `HomeClient.tsx` (Container)
 
-The core component for the streaming gallery tracks.
+The main client-side orchestrator for the photography showcase grid.
 
-### Props
-- `direction`: `"left" | "right"` (Default: `"left"`)
-- `speed`: `number` (Duration in seconds, lower is faster)
-- `images`: `GalleryImage[]`
-- `onImageClick`: `(image: GalleryImage) => void`
-- `isPaused`: `boolean` (Pauses the animation, e.g., when Lightbox is open)
-
-### Implementation Details
-- **Seamless Loop**: The component triples the `images` array to ensure there's always enough content to cover the screen during repositioning.
-- **Dynamic Aspect Ratio**: Automatically detects the natural aspect ratio of images on load to maintain consistent height (`320px`) while allowing varying widths.
-- **CSS Animation**: Uses scoped JSX styles for the `infiniteScroll` keyframes to ensure high-performance, GPU-accelerated movement.
+### Key Features
+- **Toroidal Shifting Engine**: Manages the array state updates and coordinates translations for row, column, and diagonal movements.
+- **Dynamic Grid Sizing**: Computes layout values for a 4x3 grid (4 columns, 3 rows). Height is locked to `75vh` on desktop and width is set to `96vw` on mobile, maintaining a perfect `1:1` square aspect ratio for all cells.
+- **Pulsating Background glows**: Cycles through 3 distinct color schemes on shifts (Purple/Blue, Emerald/Teal, Rose/Amber) and scales/dims them depending on grid movement states.
 
 ---
 
 ## 🔍 `Lightbox.tsx`
 
-An immersive, full-screen viewer for individual photographs.
+A clean, full-screen immersive viewer for individual photographs.
 
 ### Props
 - `image`: `GalleryImage | null`
 - `onClose`: `() => void`
+- `onPrev`: `() => void`
+- `onNext`: `() => void`
 
 ### Features
-- **Backdrop Blur**: Uses `backdrop-blur-2xl` and `bg-black/95` to isolate the focus on the selected image.
-- **Interaction**: Closeable via a dedicated "Close" button or by clicking anywhere on the backdrop.
-- **Animation**: Features a subtle scale and translate animation for entry, creating a "zoom-in" effect from the gallery.
-- **Body Lock**: Automatically prevents background scrolling while the lightbox is active.
+- **Visual Simplicity**: Stripped of metadata readouts, camera telemetry, and text clutter. Only shows the centered image.
+- **Flexible Dismissal**: Closeable via a top-right "Back" button, clicking anywhere on the black backdrop, or pressing the `Escape` key.
+- **Keyboard Support**: Listens for `ArrowLeft`/`ArrowRight` key events to cycle through the image pool.
+- **Backdrop Cursor Integration**: The backdrop is marked with `data-cursor="back"`, causing the custom mouse cursor to display "BACK" over the overlay.
 
 ---
 
-## ⏳ `PageLoader.tsx`
+## 🖱️ `CustomCursor.tsx`
 
-The high-impact introduction experience.
+A custom interactive pointer component that replaces the default system cursor.
 
 ### Features
-- **Cinematic Entrance**: Uses Framer Motion for sophisticated text revealing animations.
-- **Handoff Logic**: Synchronized with `HomeClient.tsx` to ensure the gallery content only appears after the loader completes its sequence.
-- **Aesthetic**: Minimalist design consistent with the project's premium feel.
-
----
-
-## 🏠 `HomeClient.tsx` (Container)
-
-The main orchestrator for the gallery state.
-
-### Key Logic
-- **Infinite Scroll (Sets)**: Tracks `setsCount` and uses an `IntersectionObserver` at the bottom of the page to add more marquee tracks as the user scrolls down.
-- **Visual States**:
-  - `isInitialLoad`: Controls the `PageLoader` visibility.
-  - `isHeaderCentered`: Manages the logo's position transition.
-  - `selectedImage`: Controls the `Lightbox` and applies blur/opacity to the background streams.
+- **Smooth Inertia Tracking**: Follows mouse positions using Framer Motion spring-damped motion coordinates (`cursorX`, `cursorY`).
+- **Context-Aware Expansion**: Automatically detects interactive hover targets (e.g. elements with `cursor-pointer`, `.cursor-pointer` class, or `data-cursor` attributes).
+- **Label Readout**: Displays a localized, uppercase action label based on the target element's `data-cursor` attribute:
+  - Default: **"VIEW"** (over grid items)
+  - Lightbox Backdrop: **"BACK"** (over lightbox overlay)
