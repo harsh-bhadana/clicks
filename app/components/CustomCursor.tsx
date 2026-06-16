@@ -5,10 +5,10 @@ import { motion, useSpring, useMotionValue } from "framer-motion";
 
 /**
  * A custom interactive cursor component.
- * 
+ *
  * Replaces the default browser cursor with a visually styled element that follows
- * the mouse using Framer Motion springs. When hovering over interactive elements 
- * (like images or elements with `data-cursor`), the cursor expands and displays 
+ * the mouse using Framer Motion springs. When hovering over interactive elements
+ * (like images or elements with `data-cursor`), the cursor expands and displays
  * a contextual label (e.g., "view", "next", "prev").
  */
 export default function CustomCursor() {
@@ -28,10 +28,13 @@ export default function CustomCursor() {
             mouseY.set(e.clientY);
 
             const target = e.target as HTMLElement;
-            const interactive = target.closest('[data-cursor]') || target.closest('.cursor-pointer') || target.tagName === 'IMG';
+            const interactive =
+                target.closest("[data-cursor]") ||
+                target.closest(".cursor-pointer") ||
+                target.tagName === "IMG";
 
             if (interactive) {
-                const customLabel = (interactive as HTMLElement).getAttribute('data-cursor');
+                const customLabel = (interactive as HTMLElement).getAttribute("data-cursor");
                 setCursorLabel(customLabel || "view");
                 setIsHoveringImage(true);
             } else {
@@ -56,7 +59,9 @@ export default function CustomCursor() {
             animate={{
                 width: isHoveringImage ? 80 : 32,
                 height: isHoveringImage ? 80 : 32,
-                backgroundColor: isHoveringImage ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0)",
+                backgroundColor: isHoveringImage
+                    ? "rgba(255, 255, 255, 1)"
+                    : "rgba(255, 255, 255, 0)",
             }}
         >
             {isHoveringImage && (

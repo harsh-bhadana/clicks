@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+  <!-- Aperture-inspired camera icon -->
+  <circle cx="50" cy="50" r="44" fill="none" stroke="url(#g)" stroke-width="5"/>
+  <circle cx="50" cy="50" r="18" fill="none" stroke="url(#g)" stroke-width="4"/>
+  <!-- Aperture blades (6) -->
+  <line x1="50" y1="6" x2="50" y2="32" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="88" y1="28" x2="66" y2="41" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="88" y1="72" x2="66" y2="59" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="94" x2="50" y2="68" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="12" y1="72" x2="34" y2="59" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="12" y1="28" x2="34" y2="41" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+</svg>

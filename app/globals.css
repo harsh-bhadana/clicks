@@ -1,59 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
-  --accent: #a855f7;
-  --accent-muted: rgba(168, 85, 247, 0.2);
+    --background: #050505;
+    --foreground: #ffffff;
+    --accent: #a855f7;
+    --accent-muted: rgba(168, 85, 247, 0.2);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-accent: var(--accent);
 }
 
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body.no-scroll {
-  overflow: hidden;
+    overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  cursor: none;
+    background: var(--background);
+    color: var(--foreground);
+    font-family:
+        var(--font-inter),
+        system-ui,
+        -apple-system,
+        sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
 }
 
 ::selection {
-  background: var(--accent-muted);
-  color: var(--accent);
+    background: var(--accent-muted);
+    color: var(--accent);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
+    background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+    background: var(--accent);
 }
-
-
-
