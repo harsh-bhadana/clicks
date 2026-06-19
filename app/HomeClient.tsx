@@ -172,6 +172,12 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                         onClose={() => setSelectedProject(null)}
                         onPrev={handlePrevPhoto}
                         onNext={handleNextPhoto}
+                        totalImages={gridImages.length}
+                        currentIndex={
+                            gridImages.findIndex(
+                                (img) => img.pathname === selectedProject.pathname
+                            ) + 1
+                        }
                     />
                 )}
             </AnimatePresence>
