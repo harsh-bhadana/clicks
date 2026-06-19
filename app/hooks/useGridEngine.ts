@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TargetAndTransition } from "framer-motion";
 import type { GalleryImage } from "@/app/types";
-import { COLS, ROWS } from "@/app/lib/constants";
 import { padImages, shiftDiag, shiftRow, shiftCol } from "@/app/lib/grid";
 import type { WrappingCellData } from "@/app/components/WrappingCell";
 
@@ -30,7 +29,12 @@ export interface MorphInfo {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
+export function useGridEngine(
+    initialImages: GalleryImage[],
+    paused: boolean,
+    cols: number = 4,
+    rows: number = 3
+) {
     const [gridImages, setGridImages] = useState<GalleryImage[]>(() =>
         padImages(initialImages, 12)
     );
@@ -38,12 +42,15 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
     const [morphInfo, setMorphInfo] = useState<MorphInfo | null>(null);
     const [shiftCount, setShiftCount] = useState(0);
 
+    const isAnimatingRef = useRef(false);
+
     // Carousel Shifting Effect: swaps a random row, column, or diagonal every 4 seconds
     useEffect(() => {
-        if (gridImages.length < 12 || paused) return;
+        if (paused) return;
 
         const interval = setInterval(() => {
-            if (shiftInfo || morphInfo) return;
+            if (isAnimatingRef.current) return;
+            isAnimatingRef.current = true;
 
             // Pick shift type: 40% Row, 40% Col, 20% Diagonal
             const r = Math.random();
@@ -51,9 +58,9 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
 
             const index =
                 shiftType === "row"
-                    ? Math.floor(Math.random() * ROWS)
+                    ? Math.floor(Math.random() * rows)
                     : shiftType === "col"
-                      ? Math.floor(Math.random() * COLS)
+                      ? Math.floor(Math.random() * cols)
                       : Math.floor(Math.random() * 2);
 
             const direction =
@@ -80,12 +87,13 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
                     setShiftInfo({ type: "diag", index, direction });
 
                     setTimeout(() => {
-                        setGridImages((curr) => shiftDiag(curr, index, direction));
+                        setGridImages((curr) => shiftDiag(curr, index, direction, cols));
                         setShiftInfo(null);
 
                         setTimeout(() => {
                             setMorphInfo(null);
                             setShiftCount((prev) => prev + 1);
+                            isAnimatingRef.current = false;
                         }, 300);
                     }, 1200);
                 }, 400);
@@ -96,18 +104,19 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
                 setTimeout(() => {
                     setGridImages((curr) =>
                         shiftType === "row"
-                            ? shiftRow(curr, index, direction)
-                            : shiftCol(curr, index, direction)
+                            ? shiftRow(curr, index, direction, cols)
+                            : shiftCol(curr, index, direction, cols, rows)
                     );
                     setShiftInfo(null);
                     setMorphInfo(null);
                     setShiftCount((prev) => prev + 1);
+                    isAnimatingRef.current = false;
                 }, 1200);
             }
         }, 4000);
 
         return () => clearInterval(interval);
-    }, [gridImages, shiftInfo, morphInfo, paused]);
+    }, [paused, cols, rows]);
 
     // ── Helper closures exposed to the renderer ─────────────────────────────
 
@@ -116,8 +125,10 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
         if (morphInfo.type === "row" && row === morphInfo.index) return true;
         if (morphInfo.type === "col" && col === morphInfo.index) return true;
         if (morphInfo.type === "diag") {
-            if (morphInfo.index === 0 && col === row && col < 3 && row < 3) return true;
-            if (morphInfo.index === 1 && col + row === 2 && col < 3 && row < 3) return true;
+            const minDim = Math.min(cols, rows);
+            if (morphInfo.index === 0 && col === row && col < minDim && row < minDim) return true;
+            if (morphInfo.index === 1 && col + row === minDim - 1 && col < minDim && row < minDim)
+                return true;
         }
         return false;
     };
@@ -169,12 +180,13 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
         }
 
         if (shiftInfo.type === "diag") {
+            const minDim = Math.min(cols, rows);
             if (shiftInfo.index === 0 && col === row) {
                 const isUpLeft = shiftInfo.direction === "up-left";
                 const offset = isUpLeft ? "-100%" : "100%";
                 return { ...base, x: offset, y: offset };
             }
-            if (shiftInfo.index === 1 && col + row === 2) {
+            if (shiftInfo.index === 1 && col + row === minDim - 1) {
                 const isUpRight = shiftInfo.direction === "up-right";
                 const offsetX = isUpRight ? "100%" : "-100%";
                 const offsetY = isUpRight ? "-100%" : "100%";
@@ -215,32 +227,33 @@ export function useGridEngine(initialImages: GalleryImage[], paused: boolean) {
 
         if (shiftInfo.type === "row") {
             const isLeft = shiftInfo.direction === "left";
-            const imgIndex = isLeft ? shiftInfo.index * COLS : shiftInfo.index * COLS + (COLS - 1);
+            const imgIndex = isLeft ? shiftInfo.index * cols : shiftInfo.index * cols + (cols - 1);
             const image = gridImages[imgIndex];
-            const left = isLeft ? "100%" : "-25%";
-            const top = `${shiftInfo.index * 33.3333}%`;
+            const left = isLeft ? "100%" : `-${100 / cols}%`;
+            const top = `${shiftInfo.index * (100 / rows)}%`;
             return { image, left, top };
         } else if (shiftInfo.type === "col") {
             const isUp = shiftInfo.direction === "up";
-            const imgIndex = isUp ? shiftInfo.index : shiftInfo.index + (ROWS - 1) * COLS;
+            const imgIndex = isUp ? shiftInfo.index : shiftInfo.index + (rows - 1) * cols;
             const image = gridImages[imgIndex];
-            const left = `${shiftInfo.index * 25}%`;
-            const top = isUp ? "100%" : "-33.3333%";
+            const left = `${shiftInfo.index * (100 / cols)}%`;
+            const top = isUp ? "100%" : `-${100 / rows}%`;
             return { image, left, top };
         } else {
+            const minDim = Math.min(cols, rows);
             if (shiftInfo.index === 0) {
                 const isUpLeft = shiftInfo.direction === "up-left";
-                const imgIndex = isUpLeft ? 0 : 10;
+                const imgIndex = isUpLeft ? 0 : (minDim - 1) * cols + (minDim - 1);
                 const image = gridImages[imgIndex];
-                const left = isUpLeft ? "75%" : "-25%";
-                const top = isUpLeft ? "100%" : "-33.3333%";
+                const left = isUpLeft ? `${minDim * (100 / cols)}%` : `-${100 / cols}%`;
+                const top = isUpLeft ? `${minDim * (100 / rows)}%` : `-${100 / rows}%`;
                 return { image, left, top };
             } else {
                 const isDownLeft = shiftInfo.direction === "down-left";
-                const imgIndex = isDownLeft ? 8 : 2;
+                const imgIndex = isDownLeft ? (minDim - 1) * cols : minDim - 1;
                 const image = gridImages[imgIndex];
-                const left = isDownLeft ? "75%" : "-25%";
-                const top = isDownLeft ? "-33.3333%" : "100%";
+                const left = isDownLeft ? `${minDim * (100 / cols)}%` : `-${100 / cols}%`;
+                const top = isDownLeft ? `-${100 / rows}%` : `${minDim * (100 / rows)}%`;
                 return { image, left, top };
             }
         }

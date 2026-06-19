@@ -23,11 +23,15 @@ export default function CustomCursor() {
     const cursorY = useSpring(mouseY, springConfig);
 
     useEffect(() => {
+        let lastTarget: HTMLElement | null = null;
         const handleMouseMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
 
             const target = e.target as HTMLElement;
+            if (!target || target === lastTarget) return;
+            lastTarget = target;
+
             const interactive =
                 target.closest("[data-cursor]") ||
                 target.closest(".cursor-pointer") ||

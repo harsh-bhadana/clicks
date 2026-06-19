@@ -10,6 +10,9 @@ export interface PhotoMetadata {
     iso?: string;
     story?: string;
     colorPalette?: string[];
+    focalLength?: string;
+    gpsLatitude?: number;
+    gpsLongitude?: number;
 }
 
 export interface GalleryImage {

@@ -73,85 +73,73 @@ export default function Lightbox({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            onClick={onClose}
-            data-cursor="back"
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 backdrop-blur-2xl p-6 select-none cursor-pointer"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/98 backdrop-blur-2xl select-none cursor-none"
         >
             {/* Preload adjacent images */}
             {preloadUrls?.prev && <link rel="preload" as="image" href={preloadUrls.prev} />}
             {preloadUrls?.next && <link rel="preload" as="image" href={preloadUrls.next} />}
 
-            {/* Top bar: Info toggle + Close */}
-            <header className="absolute top-0 left-0 right-0 z-10 px-8 py-8 flex items-center justify-between pointer-events-none">
-                {/* Info toggle */}
-                <button
+            {/* 3-column Interactive Navigation Layout */}
+            <div className="absolute inset-0 flex items-center z-10">
+                {/* Left Area -> Previous */}
+                <div
                     onClick={(e) => {
                         e.stopPropagation();
-                        setShowInfo((prev) => !prev);
+                        onPrev();
                     }}
-                    data-cursor="info"
-                    className="pointer-events-auto flex items-center gap-2 text-[10px] font-mono tracking-[0.4em] text-zinc-400 hover:text-white uppercase transition-all duration-300 group cursor-pointer"
-                >
-                    <Info
-                        className={`h-4 w-4 transition-all duration-300 ${showInfo ? "text-white" : ""}`}
-                    />
-                    <span className="hidden sm:inline">{showInfo ? "Hide" : "Info"}</span>
-                </button>
+                    data-cursor="previous"
+                    className="h-full w-[25vw] min-w-[60px] cursor-pointer pointer-events-auto"
+                />
 
-                {/* Close button */}
-                <button
+                {/* Center Area -> Back */}
+                <div
                     onClick={(e) => {
                         e.stopPropagation();
                         onClose();
                     }}
                     data-cursor="back"
-                    className="pointer-events-auto flex items-center gap-2 text-[10px] font-mono tracking-[0.4em] text-zinc-400 hover:text-white uppercase transition-all duration-300 group cursor-pointer"
+                    className="h-full flex-1 flex items-center justify-center cursor-pointer pointer-events-auto"
                 >
-                    <X className="h-5 w-5 transition-transform duration-500 group-hover:rotate-90" />
-                    <span>Back</span>
-                </button>
-            </header>
+                    {/* Centered Image Container */}
+                    <div className="relative w-full h-full max-w-[85vw] max-h-[80vh] flex items-center justify-center pointer-events-none">
+                        <Image
+                            src={image.src}
+                            alt={metadata.title || "Photo"}
+                            fill
+                            className="object-contain"
+                            priority
+                            unoptimized
+                        />
+                    </div>
+                </div>
 
-            {/* Previous Navigation Button */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onPrev();
-                }}
-                className="absolute left-6 z-20 h-12 w-12 rounded-full border border-white/10 bg-zinc-950/50 text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
-            >
-                <ChevronLeft className="h-6 w-6" />
-            </button>
-
-            {/* Next Navigation Button */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onNext();
-                }}
-                className="absolute right-6 z-20 h-12 w-12 rounded-full border border-white/10 bg-zinc-950/50 text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
-            >
-                <ChevronRight className="h-6 w-6" />
-            </button>
-
-            {/* Centered Image Container */}
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className="relative w-full h-full max-w-[85vw] max-h-[80vh] flex items-center justify-center pointer-events-none"
-            >
-                <Image
-                    src={image.src}
-                    alt={metadata.title || "Photo"}
-                    fill
-                    className="object-contain"
-                    priority
-                    unoptimized
+                {/* Right Area -> Next */}
+                <div
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onNext();
+                    }}
+                    data-cursor="next"
+                    className="h-full w-[25vw] min-w-[60px] cursor-pointer pointer-events-auto"
                 />
             </div>
 
-            {/* Image counter */}
+            {/* Minimal Info Button */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setShowInfo((prev) => !prev);
+                }}
+                data-cursor="info"
+                className="absolute bottom-6 left-6 z-30 h-10 w-10 rounded-full border border-white/10 bg-zinc-950/40 backdrop-blur-md text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95 pointer-events-auto"
+                title="Toggle Info"
+            >
+                <Info className="h-5 w-5" />
+            </button>
+
+            {/* Subtle Counter */}
             {totalImages && currentIndex && (
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-[10px] font-mono tracking-[0.5em] text-zinc-600">
+                <div className="absolute bottom-8 right-6 z-30 text-[11px] font-mono tracking-widest text-zinc-500 select-none pointer-events-none">
                     {currentIndex} / {totalImages}
                 </div>
             )}

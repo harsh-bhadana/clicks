@@ -14,17 +14,19 @@ interface WrappingCellProps {
     data: WrappingCellData;
     isDiag: boolean;
     animate: TargetAndTransition;
+    cols: number;
+    rows: number;
 }
 
-export default function WrappingCell({ data, isDiag, animate }: WrappingCellProps) {
+export default function WrappingCell({ data, isDiag, animate, cols, rows }: WrappingCellProps) {
     return (
         <motion.div
             style={{
                 position: "absolute",
                 left: data.left,
                 top: data.top,
-                width: "25%",
-                height: "33.3333%",
+                width: `${100 / cols}%`,
+                height: `${100 / rows}%`,
             }}
             initial={{
                 scale: isDiag ? 0.707 : 1,
