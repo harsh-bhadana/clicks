@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import PhotoInfo from "./PhotoInfo";
 import type { GalleryImage } from "../types";
 
