@@ -407,7 +407,7 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
     };
 
     return (
-        <div className="mx-auto max-w-4xl px-6 md:px-12 py-8 min-h-screen flex flex-col cursor-default w-full">
+        <div className="mx-auto max-w-7xl px-6 md:px-12 py-8 min-h-screen flex flex-col cursor-default w-full">
             {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6 mb-8 w-full">
                 <div className="flex items-center gap-3">
@@ -489,8 +489,8 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
                     /* Photo Details editing stage */
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                         {/* Staged preview card */}
-                        <div className="md:col-span-5 space-y-4">
-                            <div className="rounded-3xl border border-white/10 bg-zinc-900/10 p-5 backdrop-blur-2xl shadow-xl flex flex-col space-y-4">
+                        <div className="md:col-span-6 space-y-4">
+                            <div className="rounded-3xl border border-white/10 bg-zinc-900/10 p-6 backdrop-blur-2xl shadow-xl flex flex-col space-y-4">
                                 <div className="flex justify-between items-center border-b border-white/5 pb-2">
                                     <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
                                         <FileImage className="h-3.5 w-3.5 text-purple-400" /> Photo
@@ -509,7 +509,7 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
                                     </button>
                                 </div>
 
-                                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-950 shadow-inner">
+                                <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-950 shadow-inner">
                                     {previewUrl && (
                                         <Image
                                             src={previewUrl}
@@ -569,9 +569,9 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
                         </div>
 
                         {/* Staged Options editing card */}
-                        <div className="md:col-span-7 space-y-6">
+                        <div className="md:col-span-6 space-y-6">
                             {/* Card 1: Compression setting */}
-                            <div className="rounded-3xl border border-white/10 bg-zinc-900/10 p-5 backdrop-blur-2xl shadow-xl flex items-center justify-between">
+                            <div className="rounded-3xl border border-white/10 bg-zinc-900/10 p-6 backdrop-blur-2xl shadow-xl flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="h-8 w-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-purple-400 shadow-inner">
                                         <ImageIcon className="h-4 w-4" />
@@ -608,7 +608,7 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
                                         Story / Memory Behind Shot
                                     </label>
                                     <textarea
-                                        rows={4}
+                                        rows={6}
                                         disabled={uploading}
                                         value={pendingStory}
                                         onChange={(e) => setPendingStory(e.target.value)}
