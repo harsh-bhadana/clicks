@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CustomCursor from "./components/CustomCursor";
 import Lightbox from "./components/Lightbox";
@@ -9,7 +9,6 @@ import WrappingCell from "./components/WrappingCell";
 import AmbientGlow from "./components/AmbientGlow";
 import { useGridEngine } from "@/app/hooks/useGridEngine";
 import { useGlowColors } from "@/app/hooks/useGlowColors";
-import { COLS } from "@/app/lib/constants";
 import type { GalleryImage } from "./types";
 
 interface HomeClientProps {
@@ -18,6 +17,23 @@ interface HomeClientProps {
 
 export default function HomeClient({ initialImages }: HomeClientProps) {
     const [selectedProject, setSelectedProject] = useState<GalleryImage | null>(null);
+    const [gridDimensions, setGridDimensions] = useState({ cols: 4, rows: 3 });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setGridDimensions({ cols: 3, rows: 4 });
+            } else {
+                setGridDimensions({ cols: 4, rows: 3 });
+            }
+        };
+
+        handleResize(); // Run once on mount
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const { cols, rows } = gridDimensions;
 
     const {
         gridImages,
@@ -28,7 +44,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
         getCellBorderRadius,
         getWrappingCellAnimation,
         getWrappingCell,
-    } = useGridEngine(initialImages, !!selectedProject);
+    } = useGridEngine(initialImages, !!selectedProject, cols, rows);
 
     const { glowColor1, glowColor2 } = useGlowColors(shiftCount);
 
@@ -76,14 +92,14 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                         damping: 12,
                         mass: 1.2,
                     }}
-                    className="relative w-[96vw] aspect-[4/3] md:w-auto md:h-[75vh] overflow-hidden rounded-3xl border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-2xl select-none"
+                    className="relative w-[96vw] aspect-[3/4] md:aspect-[4/3] md:w-auto md:h-[75vh] overflow-hidden rounded-3xl border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-2xl select-none"
                 >
                     {/* Render the 12 standard cells */}
                     {gridImages.map((img, idx) => {
-                        const col = idx % COLS;
-                        const row = Math.floor(idx / COLS);
-                        const left = `${col * 25}%`;
-                        const top = `${row * 33.3333}%`;
+                        const col = idx % cols;
+                        const row = Math.floor(idx / cols);
+                        const left = `${col * (100 / cols)}%`;
+                        const top = `${row * (100 / rows)}%`;
                         const anim = getCellAnimation(col, row);
 
                         return (
@@ -93,8 +109,8 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                                     position: "absolute",
                                     left,
                                     top,
-                                    width: "25%",
-                                    height: "33.3333%",
+                                    width: `${100 / cols}%`,
+                                    height: `${100 / rows}%`,
                                 }}
                                 animate={anim}
                                 transition={
@@ -141,6 +157,8 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                             data={wrappingCell}
                             isDiag={shiftInfo?.type === "diag"}
                             animate={getWrappingCellAnimation()}
+                            cols={cols}
+                            rows={rows}
                         />
                     )}
                 </motion.div>

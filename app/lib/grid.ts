@@ -1,5 +1,4 @@
 import type { GalleryImage } from "@/app/types";
-import { COLS, ROWS } from "@/app/lib/constants";
 
 // Helper to pad/loop images array to exactly 12 elements
 export const padImages = (imgs: GalleryImage[], targetCount = 12): GalleryImage[] => {
@@ -12,34 +11,70 @@ export const padImages = (imgs: GalleryImage[], targetCount = 12): GalleryImage[
 };
 
 // Helper to shift diagonal elements in the array state
-export const shiftDiag = (curr: GalleryImage[], index: number, dir: string): GalleryImage[] => {
+export const shiftDiag = (
+    curr: GalleryImage[],
+    index: number,
+    dir: string,
+    cols: number = 4
+): GalleryImage[] => {
     const next = [...curr];
-    if (index === 0) {
-        // Main diagonal: indices 0, 5, 10
-        const elements = [next[0], next[5], next[10]];
-        if (dir === "up-left") {
-            const first = elements.shift()!;
-            elements.push(first);
+    if (cols === 4) {
+        if (index === 0) {
+            // Main diagonal: indices 0, 5, 10
+            const elements = [next[0], next[5], next[10]];
+            if (dir === "up-left") {
+                const first = elements.shift()!;
+                elements.push(first);
+            } else {
+                const last = elements.pop()!;
+                elements.unshift(last);
+            }
+            next[0] = elements[0];
+            next[5] = elements[1];
+            next[10] = elements[2];
         } else {
-            const last = elements.pop()!;
-            elements.unshift(last);
+            // Anti diagonal: indices 2, 5, 8
+            const elements = [next[2], next[5], next[8]];
+            if (dir === "down-left") {
+                const last = elements.pop()!;
+                elements.unshift(last);
+            } else {
+                const first = elements.shift()!;
+                elements.push(first);
+            }
+            next[2] = elements[0];
+            next[5] = elements[1];
+            next[8] = elements[2];
         }
-        next[0] = elements[0];
-        next[5] = elements[1];
-        next[10] = elements[2];
     } else {
-        // Anti diagonal: indices 2, 5, 8
-        const elements = [next[2], next[5], next[8]];
-        if (dir === "down-left") {
-            const last = elements.pop()!;
-            elements.unshift(last);
+        // cols === 3
+        if (index === 0) {
+            // Main diagonal: indices 0, 4, 8
+            const elements = [next[0], next[4], next[8]];
+            if (dir === "up-left") {
+                const first = elements.shift()!;
+                elements.push(first);
+            } else {
+                const last = elements.pop()!;
+                elements.unshift(last);
+            }
+            next[0] = elements[0];
+            next[4] = elements[1];
+            next[8] = elements[2];
         } else {
-            const first = elements.shift()!;
-            elements.push(first);
+            // Anti diagonal: indices 2, 4, 6
+            const elements = [next[2], next[4], next[6]];
+            if (dir === "down-left") {
+                const last = elements.pop()!;
+                elements.unshift(last);
+            } else {
+                const first = elements.shift()!;
+                elements.push(first);
+            }
+            next[2] = elements[0];
+            next[4] = elements[1];
+            next[6] = elements[2];
         }
-        next[2] = elements[0];
-        next[5] = elements[1];
-        next[8] = elements[2];
     }
     return next;
 };
@@ -48,16 +83,15 @@ export const shiftDiag = (curr: GalleryImage[], index: number, dir: string): Gal
 export const shiftRow = (
     curr: GalleryImage[],
     index: number,
-    direction: string
+    direction: string,
+    cols: number = 4
 ): GalleryImage[] => {
     const next = [...curr];
-    const startIndex = index * COLS;
-    const rowElements = [
-        next[startIndex],
-        next[startIndex + 1],
-        next[startIndex + 2],
-        next[startIndex + 3],
-    ];
+    const startIndex = index * cols;
+    const rowElements = [];
+    for (let i = 0; i < cols; i++) {
+        rowElements.push(next[startIndex + i]);
+    }
 
     if (direction === "left") {
         const first = rowElements.shift()!;
@@ -67,7 +101,7 @@ export const shiftRow = (
         rowElements.unshift(last);
     }
 
-    for (let i = 0; i < COLS; i++) {
+    for (let i = 0; i < cols; i++) {
         next[startIndex + i] = rowElements[i];
     }
     return next;
@@ -77,10 +111,15 @@ export const shiftRow = (
 export const shiftCol = (
     curr: GalleryImage[],
     index: number,
-    direction: string
+    direction: string,
+    cols: number = 4,
+    rows: number = 3
 ): GalleryImage[] => {
     const next = [...curr];
-    const colElements = [next[index], next[index + 4], next[index + 8]];
+    const colElements = [];
+    for (let i = 0; i < rows; i++) {
+        colElements.push(next[i * cols + index]);
+    }
 
     if (direction === "up") {
         const first = colElements.shift()!;
@@ -90,8 +129,8 @@ export const shiftCol = (
         colElements.unshift(last);
     }
 
-    for (let i = 0; i < ROWS; i++) {
-        next[i * COLS + index] = colElements[i];
+    for (let i = 0; i < rows; i++) {
+        next[i * cols + index] = colElements[i];
     }
     return next;
 };
