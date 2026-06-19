@@ -19,10 +19,6 @@ import exifr from "exifr";
 import { compressImage } from "@/app/lib/compress";
 import type { GalleryImage, PhotoMetadata } from "../../types";
 
-const COLOR_PALETTES = [
-    { name: "Monochrome Slate", colors: ["#09090b", "#18181b", "#3f3f46", "#71717a", "#d4d4d8"] },
-];
-
 interface ExtractedExif {
     title: string;
     camera: string;
@@ -348,7 +344,6 @@ export default function UploadClient({ initialImages }: UploadClientProps) {
                     shutterSpeed: activeExif.shutterSpeed || "1/125s",
                     iso: activeExif.iso || "100",
                     story: pendingStory || "A new addition to the clicks photography collection.",
-                    colorPalette: COLOR_PALETTES[0].colors,
                     focalLength: activeExif.focalLength || "",
                     gpsLatitude: activeExif.latitude,
                     gpsLongitude: activeExif.longitude,

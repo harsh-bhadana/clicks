@@ -27,16 +27,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import type { GalleryImage, PhotoMetadata } from "../types";
 
-// Beautiful pre-curated color palettes
-const COLOR_PALETTES = [
-    { name: "Monochrome Slate", colors: ["#09090b", "#18181b", "#3f3f46", "#71717a", "#d4d4d8"] },
-    { name: "Slate Blue", colors: ["#0f172a", "#1e293b", "#475569", "#94a3b8", "#cbd5e1"] },
-    { name: "Warm Stone", colors: ["#1c1917", "#292524", "#57534e", "#a8a29e", "#e7e5e4"] },
-    { name: "Teal Forest", colors: ["#022c22", "#064e3b", "#0f766e", "#14b8a6", "#99f6e4"] },
-    { name: "Indigo Night", colors: ["#1e1b4b", "#312e81", "#4f46e5", "#818cf8", "#c7d2fe"] },
-    { name: "Sunset Gold", colors: ["#1e1510", "#451a03", "#9a3412", "#ea580c", "#ffedd5"] },
-];
-
 const CATEGORIES = ["Street", "Landscape", "Travel", "Minimal", "Portrait"];
 
 interface AdminClientProps {
@@ -63,7 +53,6 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
     const [formShutterSpeed, setFormShutterSpeed] = useState("");
     const [formIso, setFormIso] = useState("");
     const [formStory, setFormStory] = useState("");
-    const [formPalette, setFormPalette] = useState<string[]>(COLOR_PALETTES[0].colors);
     const [formFocalLength, setFormFocalLength] = useState("");
     const [formLatitude, setFormLatitude] = useState<number | undefined>(undefined);
     const [formLongitude, setFormLongitude] = useState<number | undefined>(undefined);
@@ -116,7 +105,6 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
         setFormShutterSpeed(meta.shutterSpeed || "");
         setFormIso(meta.iso || "");
         setFormStory(meta.story || "");
-        setFormPalette(meta.colorPalette || COLOR_PALETTES[0].colors);
         setFormFocalLength(meta.focalLength || "");
         setFormLatitude(meta.gpsLatitude);
         setFormLongitude(meta.gpsLongitude);
@@ -166,7 +154,6 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 shutterSpeed: formShutterSpeed,
                 iso: formIso,
                 story: formStory,
-                colorPalette: formPalette,
                 focalLength: formFocalLength,
                 gpsLatitude: formLatitude,
                 gpsLongitude: formLongitude,
@@ -649,60 +636,6 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                                     onChange={(e) => setFormStory(e.target.value)}
                                                     className="w-full rounded-xl border border-white/10 bg-neutral-900/50 px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 hover:border-white/20 hover:bg-neutral-900/80 focus:border-purple-500/60 focus:bg-neutral-950 focus:outline-none focus:shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all duration-300 resize-none"
                                                 />
-                                            </div>
-                                        </div>
-
-                                        {/* Card 3: Color palette selection */}
-                                        <div className="rounded-2xl border border-white/5 bg-neutral-950/40 p-5 space-y-3 shadow-sm">
-                                            <div className="text-[9px] font-mono tracking-widest text-zinc-500 uppercase border-b border-white/5 pb-1.5">
-                                                Color Palette Scheme
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-mono tracking-widest text-zinc-400 uppercase mb-2.5">
-                                                    Palette Swatch Scheme
-                                                </label>
-                                                <div className="grid grid-cols-3 gap-3">
-                                                    {COLOR_PALETTES.map((palette) => {
-                                                        const isSelected =
-                                                            JSON.stringify(formPalette) ===
-                                                            JSON.stringify(palette.colors);
-                                                        return (
-                                                            <button
-                                                                key={palette.name}
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setFormPalette(palette.colors)
-                                                                }
-                                                                className={`relative p-2.5 rounded-2xl border text-left flex flex-col justify-between h-16 transition-all duration-300 cursor-pointer ${
-                                                                    isSelected
-                                                                        ? "border-purple-500 bg-purple-500/5 shadow-[0_0_15px_rgba(168,85,247,0.1)]"
-                                                                        : "border-white/5 bg-neutral-950/40 hover:border-white/12 hover:bg-neutral-900/30"
-                                                                }`}
-                                                            >
-                                                                <span className="text-[9px] font-mono tracking-wider text-zinc-400 block truncate uppercase leading-none pr-3">
-                                                                    {palette.name.split(" ")[0]}
-                                                                </span>
-                                                                <div className="flex -space-x-1 mt-2">
-                                                                    {palette.colors.map((c, i) => (
-                                                                        <div
-                                                                            key={i}
-                                                                            className="w-4 h-4 rounded-full border border-neutral-950/80 shadow-sm relative animate-fade-in"
-                                                                            style={{
-                                                                                backgroundColor: c,
-                                                                                zIndex: i,
-                                                                            }}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                                {isSelected && (
-                                                                    <span className="absolute top-2.5 right-2.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-purple-500 text-white shadow-md shadow-purple-950/50">
-                                                                        <Check className="h-2 w-2" />
-                                                                    </span>
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
