@@ -50,21 +50,21 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
 
     // Lightbox Prev / Next Handlers (cycle through the full list of images)
     const handlePrevPhoto = () => {
-        if (!selectedProject || gridImages.length === 0) return;
-        const currentIndex = gridImages.findIndex(
+        if (!selectedProject || initialImages.length === 0) return;
+        const currentIndex = initialImages.findIndex(
             (img) => img.pathname === selectedProject.pathname
         );
-        const prevIndex = (currentIndex - 1 + gridImages.length) % gridImages.length;
-        setSelectedProject(gridImages[prevIndex]);
+        const prevIndex = (currentIndex - 1 + initialImages.length) % initialImages.length;
+        setSelectedProject(initialImages[prevIndex]);
     };
 
     const handleNextPhoto = () => {
-        if (!selectedProject || gridImages.length === 0) return;
-        const currentIndex = gridImages.findIndex(
+        if (!selectedProject || initialImages.length === 0) return;
+        const currentIndex = initialImages.findIndex(
             (img) => img.pathname === selectedProject.pathname
         );
-        const nextIndex = (currentIndex + 1) % gridImages.length;
-        setSelectedProject(gridImages[nextIndex]);
+        const nextIndex = (currentIndex + 1) % initialImages.length;
+        setSelectedProject(initialImages[nextIndex]);
     };
 
     const wrappingCell = getWrappingCell();
