@@ -92,7 +92,7 @@ export default function HomeClient({ initialImages }: HomeClientProps) {
                         damping: 12,
                         mass: 1.2,
                     }}
-                    className="relative w-[96vw] aspect-[3/4] md:aspect-[4/3] md:w-auto md:h-[75vh] overflow-hidden rounded-3xl border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-2xl select-none"
+                    className="relative w-[96vw] max-w-[96vw] aspect-[3/4] h-auto max-h-[75vh] md:aspect-[4/3] md:w-[100vh] md:max-w-[90vw] md:h-auto md:max-h-[75vh] overflow-hidden rounded-3xl border border-white/5 bg-zinc-950/40 backdrop-blur-md shadow-2xl select-none"
                 >
                     {/* Render the 12 standard cells */}
                     {gridImages.map((img, idx) => {

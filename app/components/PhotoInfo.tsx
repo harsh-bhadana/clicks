@@ -2,7 +2,17 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, MapPin, Calendar, Aperture, Timer, Gauge } from "lucide-react";
+import {
+    Camera,
+    MapPin,
+    Calendar,
+    Aperture,
+    Timer,
+    Gauge,
+    Sliders,
+    Zap,
+    Database,
+} from "lucide-react";
 import type { PhotoMetadata } from "@/app/types";
 
 interface PhotoInfoProps {
@@ -82,6 +92,32 @@ export default function PhotoInfo({ metadata, isVisible }: PhotoInfoProps) {
                                 <div className="flex items-center gap-2 text-zinc-400">
                                     <Gauge className="w-3.5 h-3.5 text-zinc-600" />
                                     <span>ISO {metadata.iso}</span>
+                                </div>
+                            )}
+                            {metadata.exposureBias && (
+                                <div className="flex items-center gap-2 text-zinc-400">
+                                    <Sliders className="w-3.5 h-3.5 text-zinc-600" />
+                                    <span>Exposure {metadata.exposureBias}</span>
+                                </div>
+                            )}
+                            {metadata.flash && (
+                                <div className="flex items-center gap-2 text-zinc-400">
+                                    <Zap className="w-3.5 h-3.5 text-zinc-600" />
+                                    <span>{metadata.flash}</span>
+                                </div>
+                            )}
+                            {(metadata.fileSize || metadata.dimensions || metadata.megapixels) && (
+                                <div className="flex items-center gap-2 text-zinc-400 col-span-2">
+                                    <Database className="w-3.5 h-3.5 text-zinc-600" />
+                                    <span>
+                                        {[
+                                            metadata.fileSize,
+                                            metadata.dimensions,
+                                            metadata.megapixels,
+                                        ]
+                                            .filter(Boolean)
+                                            .join("  |  ")}
+                                    </span>
                                 </div>
                             )}
                             {metadata.category && (

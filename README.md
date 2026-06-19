@@ -6,11 +6,14 @@ The experience is built with a "content-first" philosophy, using high-performanc
 
 ## ✨ Key Features
 
-- **Toroidal Slide Grid**: A widescreen 4x3 grid (4 columns, 3 rows) that shifts rows, columns, or diagonals every 4 seconds in a seamless toroidal loop.
+- **Dynamic Toroidal Slide Grid**: A widescreen layout that dynamically adapts to device viewports, featuring a desktop 4x3 grid (4 columns, 3 rows) and a mobile 3x4 grid (3 columns, 4 rows) that shifts rows, columns, or diagonals every 4 seconds in a seamless toroidal loop.
 - **Diagonal Morphing**: Diagonal movements temporarily morph grid cells into circles and scale them down to `0.707` of their size to slide collision-free.
-- **Pulsating Ambient glows**: Colorful background glows (Purple/Blue, Emerald/Teal, Rose/Amber) that expand and brighten during active shifts and fade out completely when idle.
+- **Pulsating Ambient Glows**: Colorful background glows (Purple/Blue, Emerald/Teal, Rose/Amber) that expand and brighten during active shifts and fade out completely when idle.
 - **Immersive Full-Screen Lightbox**: A minimal photo overlay stripped of metadata clutter, featuring full-screen imagery, navigation controls, and custom interactive cursor support.
 - **Crisp Image Quality**: Powered by Next.js Image Optimization with precise responsive `sizes` to eliminate browser aliasing and pixelation on high-DPI screens.
+- **Secure Admin Dashboard**: A protected dashboard (`/admin`) for uploading new images, updating photo metadata, batch deletion, and session logout.
+- **Automated EXIF Metadata Extraction**: Automatically parses camera details, exposure stats, focal lengths, and GPS coordinates directly from uploaded photos during configuration.
+- **Smart Image Compression**: Automatically resizes and compresses large camera images client-side before uploading to optimize bandwidth and Vercel Blob storage usage.
 
 ## 📖 Documentation
 

@@ -11,7 +11,6 @@ const mockImage = (id: number): GalleryImage => ({
         location: "Location",
         date: "Date",
         category: "Street",
-        colorPalette: [],
     },
 });
 

@@ -67,6 +67,7 @@ export async function POST(request: Request) {
             const blob = await put("gallery/metadata.json", JSON.stringify(metadataMap, null, 2), {
                 access: "public",
                 addRandomSuffix: false,
+                allowOverwrite: true,
                 contentType: "application/json",
             });
 

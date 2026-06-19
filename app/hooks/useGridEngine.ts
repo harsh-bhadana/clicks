@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TargetAndTransition } from "framer-motion";
 import type { GalleryImage } from "@/app/types";
 import { padImages, shiftDiag, shiftRow, shiftCol } from "@/app/lib/grid";
@@ -27,6 +27,68 @@ export interface MorphInfo {
     index: number;
 }
 
+// Helper to shuffle an array
+function shuffle<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// Helper to filter out duplicate images by pathname
+function getUniqueImages(images: GalleryImage[]): GalleryImage[] {
+    const seen = new Set<string>();
+    return images.filter((img) => {
+        if (!img.pathname) return true;
+        if (seen.has(img.pathname)) return false;
+        seen.add(img.pathname);
+        return true;
+    });
+}
+
+// Helper to calculate displaced and wrapped grid indices for a shift
+const getShiftIndices = (
+    type: "row" | "col" | "diag",
+    index: number,
+    direction: string,
+    cols: number,
+    rows: number
+) => {
+    let displacedIndex = 0;
+    let wrappedIndex = 0;
+
+    if (type === "row") {
+        const startIndex = index * cols;
+        displacedIndex = direction === "left" ? startIndex : startIndex + cols - 1;
+        wrappedIndex = direction === "left" ? startIndex + cols - 1 : startIndex;
+    } else if (type === "col") {
+        displacedIndex = direction === "up" ? index : (rows - 1) * cols + index;
+        wrappedIndex = direction === "up" ? (rows - 1) * cols + index : index;
+    } else {
+        const minDim = Math.min(cols, rows);
+        if (cols === 4) {
+            if (index === 0) {
+                displacedIndex = direction === "up-left" ? 0 : 10;
+                wrappedIndex = direction === "up-left" ? 10 : 0;
+            } else {
+                displacedIndex = direction === "down-left" ? 2 : 8;
+                wrappedIndex = direction === "down-left" ? 8 : 2;
+            }
+        } else {
+            if (index === 0) {
+                displacedIndex = direction === "up-left" ? 0 : 8;
+                wrappedIndex = direction === "up-left" ? 8 : 0;
+            } else {
+                displacedIndex = direction === "down-left" ? 2 : 6;
+                wrappedIndex = direction === "down-left" ? 6 : 2;
+            }
+        }
+    }
+    return { displacedIndex, wrappedIndex };
+};
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useGridEngine(
@@ -35,99 +97,79 @@ export function useGridEngine(
     cols: number = 4,
     rows: number = 3
 ) {
-    const [gridImages, setGridImages] = useState<GalleryImage[]>(() =>
-        padImages(initialImages, 12)
-    );
-    const [shiftInfo, setShiftInfo] = useState<ShiftInfo | null>(null);
-    const [morphInfo, setMorphInfo] = useState<MorphInfo | null>(null);
-    const [shiftCount, setShiftCount] = useState(0);
-    const [pool, setPool] = useState<GalleryImage[]>(() => {
-        if (initialImages.length <= 12) return [];
-        return initialImages.slice(12);
+    const [state, setState] = useState<{
+        gridImages: GalleryImage[];
+        pool: GalleryImage[];
+        shiftInfo: ShiftInfo | null;
+        morphInfo: MorphInfo | null;
+        incomingImage: GalleryImage | null;
+        shiftCount: number;
+    }>(() => {
+        const unique = getUniqueImages(initialImages);
+        if (unique.length === 0) {
+            return {
+                gridImages: [],
+                pool: [],
+                shiftInfo: null,
+                morphInfo: null,
+                incomingImage: null,
+                shiftCount: 0,
+            };
+        }
+        if (unique.length <= 12) {
+            return {
+                gridImages: unique,
+                pool: [],
+                shiftInfo: null,
+                morphInfo: null,
+                incomingImage: null,
+                shiftCount: 0,
+            };
+        }
+        const shuffled = shuffle(unique);
+        return {
+            gridImages: shuffled.slice(0, 12),
+            pool: shuffled.slice(12),
+            shiftInfo: null,
+            morphInfo: null,
+            incomingImage: null,
+            shiftCount: 0,
+        };
     });
 
+    const { gridImages, pool, shiftInfo, morphInfo, incomingImage, shiftCount } = state;
+
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setGridImages(padImages(initialImages, 12));
-        if (initialImages.length <= 12) {
-             
-            setPool([]);
+        const unique = getUniqueImages(initialImages);
+        if (unique.length <= 12) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setState({
+                gridImages: unique,
+                pool: [],
+                shiftInfo: null,
+                morphInfo: null,
+                incomingImage: null,
+                shiftCount: 0,
+            });
         } else {
+            const shuffled = shuffle(unique);
              
-            setPool(initialImages.slice(12));
+            setState({
+                gridImages: shuffled.slice(0, 12),
+                pool: shuffled.slice(12),
+                shiftInfo: null,
+                morphInfo: null,
+                incomingImage: null,
+                shiftCount: 0,
+            });
         }
     }, [initialImages]);
-
-    const shiftAndReplace = useCallback(
-        (curr: GalleryImage[], type: "row" | "col" | "diag", index: number, direction: string) => {
-            if (pool.length === 0) {
-                let nextGrid;
-                if (type === "row") nextGrid = shiftRow(curr, index, direction, cols);
-                else if (type === "col") nextGrid = shiftCol(curr, index, direction, cols, rows);
-                else nextGrid = shiftDiag(curr, index, direction, cols);
-                return { nextGrid, nextPool: null };
-            }
-
-            const next = [...curr];
-            const nextPool = [...pool];
-            const newImg = nextPool.shift()!;
-
-            if (type === "row") {
-                const startIndex = index * cols;
-                const displacedIndex = direction === "left" ? startIndex : startIndex + cols - 1;
-                nextPool.push(next[displacedIndex]);
-
-                const shifted = shiftRow(curr, index, direction, cols);
-                const wrappedIndex = direction === "left" ? startIndex + cols - 1 : startIndex;
-                shifted[wrappedIndex] = newImg;
-
-                return { nextGrid: shifted, nextPool };
-            } else if (type === "col") {
-                const displacedIndex = direction === "up" ? index : (rows - 1) * cols + index;
-                nextPool.push(next[displacedIndex]);
-
-                const shifted = shiftCol(curr, index, direction, cols, rows);
-                const wrappedIndex = direction === "up" ? (rows - 1) * cols + index : index;
-                shifted[wrappedIndex] = newImg;
-
-                return { nextGrid: shifted, nextPool };
-            } else {
-                let displacedIndex = 0;
-                let wrappedIndex = 0;
-                if (cols === 4) {
-                    if (index === 0) {
-                        displacedIndex = direction === "up-left" ? 0 : 10;
-                        wrappedIndex = direction === "up-left" ? 10 : 0;
-                    } else {
-                        displacedIndex = direction === "down-left" ? 2 : 8;
-                        wrappedIndex = direction === "down-left" ? 8 : 2;
-                    }
-                } else {
-                    if (index === 0) {
-                        displacedIndex = direction === "up-left" ? 0 : 8;
-                        wrappedIndex = direction === "up-left" ? 8 : 0;
-                    } else {
-                        displacedIndex = direction === "down-left" ? 2 : 6;
-                        wrappedIndex = direction === "down-left" ? 6 : 2;
-                    }
-                }
-
-                nextPool.push(next[displacedIndex]);
-
-                const shifted = shiftDiag(curr, index, direction, cols);
-                shifted[wrappedIndex] = newImg;
-
-                return { nextGrid: shifted, nextPool };
-            }
-        },
-        [pool, cols, rows]
-    );
 
     const isAnimatingRef = useRef(false);
 
     // Carousel Shifting Effect: swaps a random row, column, or diagonal every 4 seconds
     useEffect(() => {
-        if (paused) return;
+        if (paused || state.pool.length === 0) return;
 
         const interval = setInterval(() => {
             if (isAnimatingRef.current) return;
@@ -161,57 +203,111 @@ export function useGridEngine(
                           ? "up-right"
                           : "down-left";
 
+            // Determine incoming and displaced images synchronously
+            let selectedIncoming: GalleryImage | null = null;
+            if (state.pool.length > 0) {
+                const randIdx = Math.floor(Math.random() * state.pool.length);
+                selectedIncoming = state.pool[randIdx];
+            }
+
+            const { displacedIndex, wrappedIndex } = getShiftIndices(
+                shiftType,
+                index,
+                direction,
+                cols,
+                rows
+            );
+            const displacedImg = state.gridImages[displacedIndex];
+
             if (shiftType === "diag") {
-                setMorphInfo({ type: "diag", index });
+                setState((prev) => ({
+                    ...prev,
+                    morphInfo: { type: "diag", index },
+                    incomingImage: selectedIncoming,
+                }));
 
                 setTimeout(() => {
-                    setShiftInfo({ type: "diag", index, direction });
+                    setState((prev) => ({
+                        ...prev,
+                        shiftInfo: { type: "diag", index, direction },
+                    }));
 
                     setTimeout(() => {
-                        setGridImages((curr) => {
-                            const { nextGrid, nextPool } = shiftAndReplace(
-                                curr,
-                                "diag",
-                                index,
-                                direction
-                            );
-                            if (nextPool) setPool(nextPool);
-                            return nextGrid;
+                        setState((prev) => {
+                            const nextGrid = shiftDiag(prev.gridImages, index, direction, cols);
+                            let nextPool = [...prev.pool];
+
+                            if (selectedIncoming && displacedImg) {
+                                nextGrid[wrappedIndex] = selectedIncoming;
+                                nextPool = nextPool.filter(
+                                    (img) => img.pathname !== selectedIncoming!.pathname
+                                );
+                                nextPool.push(displacedImg);
+                            }
+
+                            return {
+                                ...prev,
+                                gridImages: nextGrid,
+                                pool: nextPool,
+                                shiftInfo: null,
+                                incomingImage: null,
+                            };
                         });
-                        setShiftInfo(null);
 
                         setTimeout(() => {
-                            setMorphInfo(null);
-                            setShiftCount((prev) => prev + 1);
+                            setState((prev) => ({
+                                ...prev,
+                                morphInfo: null,
+                                shiftCount: prev.shiftCount + 1,
+                            }));
                             isAnimatingRef.current = false;
                         }, 300);
                     }, 1200);
                 }, 400);
             } else {
-                setMorphInfo({ type: shiftType, index });
-                setShiftInfo({ type: shiftType, index, direction });
+                setState((prev) => ({
+                    ...prev,
+                    morphInfo: { type: shiftType, index },
+                    shiftInfo: { type: shiftType, index, direction },
+                    incomingImage: selectedIncoming,
+                }));
 
                 setTimeout(() => {
-                    setGridImages((curr) => {
-                        const { nextGrid, nextPool } = shiftAndReplace(
-                            curr,
-                            shiftType,
-                            index,
-                            direction
-                        );
-                        if (nextPool) setPool(nextPool);
-                        return nextGrid;
+                    setState((prev) => {
+                        let nextGrid;
+                        if (shiftType === "row") {
+                            nextGrid = shiftRow(prev.gridImages, index, direction, cols);
+                        } else {
+                            nextGrid = shiftCol(prev.gridImages, index, direction, cols, rows);
+                        }
+                        let nextPool = [...prev.pool];
+
+                        if (selectedIncoming && displacedImg) {
+                            nextGrid[wrappedIndex] = selectedIncoming;
+                            nextPool = nextPool.filter(
+                                (img) => img.pathname !== selectedIncoming!.pathname
+                            );
+                            nextPool.push(displacedImg);
+                        }
+
+                        return {
+                            ...prev,
+                            gridImages: nextGrid,
+                            pool: nextPool,
+                            shiftInfo: null,
+                            morphInfo: null,
+                            incomingImage: null,
+                            shiftCount: prev.shiftCount + 1,
+                        };
                     });
-                    setShiftInfo(null);
-                    setMorphInfo(null);
-                    setShiftCount((prev) => prev + 1);
+
                     isAnimatingRef.current = false;
                 }, 1200);
             }
         }, 4000);
 
         return () => clearInterval(interval);
-    }, [paused, cols, rows, pool, shiftAndReplace]);
+    }, [paused, cols, rows, state, initialImages]);
 
     // ── Helper closures exposed to the renderer ─────────────────────────────
 
@@ -323,14 +419,14 @@ export function useGridEngine(
         if (shiftInfo.type === "row") {
             const isLeft = shiftInfo.direction === "left";
             const imgIndex = isLeft ? shiftInfo.index * cols : shiftInfo.index * cols + (cols - 1);
-            const image = gridImages[imgIndex];
+            const image = incomingImage || gridImages[imgIndex];
             const left = isLeft ? "100%" : `-${100 / cols}%`;
             const top = `${shiftInfo.index * (100 / rows)}%`;
             return { image, left, top };
         } else if (shiftInfo.type === "col") {
             const isUp = shiftInfo.direction === "up";
             const imgIndex = isUp ? shiftInfo.index : shiftInfo.index + (rows - 1) * cols;
-            const image = gridImages[imgIndex];
+            const image = incomingImage || gridImages[imgIndex];
             const left = `${shiftInfo.index * (100 / cols)}%`;
             const top = isUp ? "100%" : `-${100 / rows}%`;
             return { image, left, top };
@@ -339,14 +435,14 @@ export function useGridEngine(
             if (shiftInfo.index === 0) {
                 const isUpLeft = shiftInfo.direction === "up-left";
                 const imgIndex = isUpLeft ? 0 : (minDim - 1) * cols + (minDim - 1);
-                const image = gridImages[imgIndex];
+                const image = incomingImage || gridImages[imgIndex];
                 const left = isUpLeft ? `${minDim * (100 / cols)}%` : `-${100 / cols}%`;
                 const top = isUpLeft ? `${minDim * (100 / rows)}%` : `-${100 / rows}%`;
                 return { image, left, top };
             } else {
                 const isDownLeft = shiftInfo.direction === "down-left";
                 const imgIndex = isDownLeft ? (minDim - 1) * cols : minDim - 1;
-                const image = gridImages[imgIndex];
+                const image = incomingImage || gridImages[imgIndex];
                 const left = isDownLeft ? `${minDim * (100 / cols)}%` : `-${100 / cols}%`;
                 const top = isDownLeft ? `-${100 / rows}%` : `${minDim * (100 / rows)}%`;
                 return { image, left, top };
