@@ -9,7 +9,6 @@ export interface PhotoMetadata {
     shutterSpeed?: string;
     iso?: string;
     story?: string;
-    colorPalette?: string[];
     focalLength?: string;
     gpsLatitude?: number;
     gpsLongitude?: number;

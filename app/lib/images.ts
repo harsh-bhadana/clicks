@@ -2,15 +2,6 @@ import { unstable_cache } from "next/cache";
 import { list } from "@vercel/blob";
 import type { GalleryImage, PhotoMetadata } from "../types";
 
-// Dynamic default palette generator
-const DEFAULT_PALETTES = [
-    ["#09090b", "#18181b", "#3f3f46", "#71717a", "#d4d4d8"], // Slate Monochromatic
-    ["#0f172a", "#1e293b", "#475569", "#94a3b8", "#cbd5e1"], // Slate Blue
-    ["#1c1917", "#292524", "#57534e", "#a8a29e", "#e7e5e4"], // Stone Warm
-    ["#022c22", "#064e3b", "#0f766e", "#14b8a6", "#99f6e4"], // Teal Forest
-    ["#1e1b4b", "#312e81", "#4f46e5", "#818cf8", "#c7d2fe"], // Indigo Night
-];
-
 function generateDefaultMetadata(pathname: string, id: number): PhotoMetadata {
     const isClick = pathname.includes("click_");
     const nameClean = pathname
@@ -55,7 +46,6 @@ function generateDefaultMetadata(pathname: string, id: number): PhotoMetadata {
         shutterSpeed: id % 2 === 0 ? "1/250s" : "1/1000s",
         iso: id % 3 === 0 ? "100" : id % 3 === 1 ? "400" : "800",
         story: `A candid study capturing the light, texture, and atmosphere of ${location}. Part of an ongoing visual diary exploring spatial intimacy.`,
-        colorPalette: DEFAULT_PALETTES[id % DEFAULT_PALETTES.length],
     };
 }
 
