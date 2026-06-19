@@ -37,6 +37,17 @@ function shuffle<T>(array: T[]): T[] {
     return arr;
 }
 
+// Helper to filter out duplicate images by pathname
+function getUniqueImages(images: GalleryImage[]): GalleryImage[] {
+    const seen = new Set<string>();
+    return images.filter((img) => {
+        if (!img.pathname) return true;
+        if (seen.has(img.pathname)) return false;
+        seen.add(img.pathname);
+        return true;
+    });
+}
+
 // Helper to calculate displaced and wrapped grid indices for a shift
 const getShiftIndices = (
     type: "row" | "col" | "diag",
@@ -94,7 +105,8 @@ export function useGridEngine(
         incomingImage: GalleryImage | null;
         shiftCount: number;
     }>(() => {
-        if (initialImages.length === 0) {
+        const unique = getUniqueImages(initialImages);
+        if (unique.length === 0) {
             return {
                 gridImages: [],
                 pool: [],
@@ -104,9 +116,9 @@ export function useGridEngine(
                 shiftCount: 0,
             };
         }
-        if (initialImages.length <= 12) {
+        if (unique.length <= 12) {
             return {
-                gridImages: padImages(initialImages, 12),
+                gridImages: unique,
                 pool: [],
                 shiftInfo: null,
                 morphInfo: null,
@@ -114,7 +126,7 @@ export function useGridEngine(
                 shiftCount: 0,
             };
         }
-        const shuffled = shuffle(initialImages);
+        const shuffled = shuffle(unique);
         return {
             gridImages: shuffled.slice(0, 12),
             pool: shuffled.slice(12),
@@ -128,10 +140,11 @@ export function useGridEngine(
     const { gridImages, pool, shiftInfo, morphInfo, incomingImage, shiftCount } = state;
 
     useEffect(() => {
-        if (initialImages.length <= 12) {
+        const unique = getUniqueImages(initialImages);
+        if (unique.length <= 12) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setState({
-                gridImages: padImages(initialImages, 12),
+                gridImages: unique,
                 pool: [],
                 shiftInfo: null,
                 morphInfo: null,
@@ -139,7 +152,7 @@ export function useGridEngine(
                 shiftCount: 0,
             });
         } else {
-            const shuffled = shuffle(initialImages);
+            const shuffled = shuffle(unique);
              
             setState({
                 gridImages: shuffled.slice(0, 12),
@@ -156,7 +169,7 @@ export function useGridEngine(
 
     // Carousel Shifting Effect: swaps a random row, column, or diagonal every 4 seconds
     useEffect(() => {
-        if (paused) return;
+        if (paused || state.pool.length === 0) return;
 
         const interval = setInterval(() => {
             if (isAnimatingRef.current) return;
