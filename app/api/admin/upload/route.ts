@@ -3,8 +3,11 @@ import { put } from "@vercel/blob";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SESSION_COOKIE_NAME = "clicks_admin_session";
-const SESSION_TOKEN = "clicks_authorized_session_token_2026";
+const SESSION_TOKEN = ADMIN_PASSWORD
+    ? Buffer.from(ADMIN_PASSWORD).toString("base64")
+    : "clicks_authorized_session_token_2026";
 
 async function isAuthorized() {
     const cookieStore = await cookies();
