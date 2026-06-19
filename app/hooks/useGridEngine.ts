@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TargetAndTransition } from "framer-motion";
 import type { GalleryImage } from "@/app/types";
 import { padImages, shiftDiag, shiftRow, shiftCol } from "@/app/lib/grid";
@@ -42,12 +42,15 @@ export function useGridEngine(
     const [morphInfo, setMorphInfo] = useState<MorphInfo | null>(null);
     const [shiftCount, setShiftCount] = useState(0);
 
+    const isAnimatingRef = useRef(false);
+
     // Carousel Shifting Effect: swaps a random row, column, or diagonal every 4 seconds
     useEffect(() => {
-        if (gridImages.length < 12 || paused) return;
+        if (paused) return;
 
         const interval = setInterval(() => {
-            if (shiftInfo || morphInfo) return;
+            if (isAnimatingRef.current) return;
+            isAnimatingRef.current = true;
 
             // Pick shift type: 40% Row, 40% Col, 20% Diagonal
             const r = Math.random();
@@ -90,6 +93,7 @@ export function useGridEngine(
                         setTimeout(() => {
                             setMorphInfo(null);
                             setShiftCount((prev) => prev + 1);
+                            isAnimatingRef.current = false;
                         }, 300);
                     }, 1200);
                 }, 400);
@@ -106,12 +110,13 @@ export function useGridEngine(
                     setShiftInfo(null);
                     setMorphInfo(null);
                     setShiftCount((prev) => prev + 1);
+                    isAnimatingRef.current = false;
                 }, 1200);
             }
         }, 4000);
 
         return () => clearInterval(interval);
-    }, [gridImages, shiftInfo, morphInfo, paused, cols, rows]);
+    }, [paused, cols, rows]);
 
     // ── Helper closures exposed to the renderer ─────────────────────────────
 
