@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { TargetAndTransition } from "framer-motion";
 import type { GalleryImage } from "@/app/types";
 import { padImages, shiftDiag, shiftRow, shiftCol } from "@/app/lib/grid";
@@ -41,6 +41,87 @@ export function useGridEngine(
     const [shiftInfo, setShiftInfo] = useState<ShiftInfo | null>(null);
     const [morphInfo, setMorphInfo] = useState<MorphInfo | null>(null);
     const [shiftCount, setShiftCount] = useState(0);
+    const [pool, setPool] = useState<GalleryImage[]>(() => {
+        if (initialImages.length <= 12) return [];
+        return initialImages.slice(12);
+    });
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setGridImages(padImages(initialImages, 12));
+        if (initialImages.length <= 12) {
+             
+            setPool([]);
+        } else {
+             
+            setPool(initialImages.slice(12));
+        }
+    }, [initialImages]);
+
+    const shiftAndReplace = useCallback(
+        (curr: GalleryImage[], type: "row" | "col" | "diag", index: number, direction: string) => {
+            if (pool.length === 0) {
+                let nextGrid;
+                if (type === "row") nextGrid = shiftRow(curr, index, direction, cols);
+                else if (type === "col") nextGrid = shiftCol(curr, index, direction, cols, rows);
+                else nextGrid = shiftDiag(curr, index, direction, cols);
+                return { nextGrid, nextPool: null };
+            }
+
+            const next = [...curr];
+            const nextPool = [...pool];
+            const newImg = nextPool.shift()!;
+
+            if (type === "row") {
+                const startIndex = index * cols;
+                const displacedIndex = direction === "left" ? startIndex : startIndex + cols - 1;
+                nextPool.push(next[displacedIndex]);
+
+                const shifted = shiftRow(curr, index, direction, cols);
+                const wrappedIndex = direction === "left" ? startIndex + cols - 1 : startIndex;
+                shifted[wrappedIndex] = newImg;
+
+                return { nextGrid: shifted, nextPool };
+            } else if (type === "col") {
+                const displacedIndex = direction === "up" ? index : (rows - 1) * cols + index;
+                nextPool.push(next[displacedIndex]);
+
+                const shifted = shiftCol(curr, index, direction, cols, rows);
+                const wrappedIndex = direction === "up" ? (rows - 1) * cols + index : index;
+                shifted[wrappedIndex] = newImg;
+
+                return { nextGrid: shifted, nextPool };
+            } else {
+                let displacedIndex = 0;
+                let wrappedIndex = 0;
+                if (cols === 4) {
+                    if (index === 0) {
+                        displacedIndex = direction === "up-left" ? 0 : 10;
+                        wrappedIndex = direction === "up-left" ? 10 : 0;
+                    } else {
+                        displacedIndex = direction === "down-left" ? 2 : 8;
+                        wrappedIndex = direction === "down-left" ? 8 : 2;
+                    }
+                } else {
+                    if (index === 0) {
+                        displacedIndex = direction === "up-left" ? 0 : 8;
+                        wrappedIndex = direction === "up-left" ? 8 : 0;
+                    } else {
+                        displacedIndex = direction === "down-left" ? 2 : 6;
+                        wrappedIndex = direction === "down-left" ? 6 : 2;
+                    }
+                }
+
+                nextPool.push(next[displacedIndex]);
+
+                const shifted = shiftDiag(curr, index, direction, cols);
+                shifted[wrappedIndex] = newImg;
+
+                return { nextGrid: shifted, nextPool };
+            }
+        },
+        [pool, cols, rows]
+    );
 
     const isAnimatingRef = useRef(false);
 
@@ -87,7 +168,16 @@ export function useGridEngine(
                     setShiftInfo({ type: "diag", index, direction });
 
                     setTimeout(() => {
-                        setGridImages((curr) => shiftDiag(curr, index, direction, cols));
+                        setGridImages((curr) => {
+                            const { nextGrid, nextPool } = shiftAndReplace(
+                                curr,
+                                "diag",
+                                index,
+                                direction
+                            );
+                            if (nextPool) setPool(nextPool);
+                            return nextGrid;
+                        });
                         setShiftInfo(null);
 
                         setTimeout(() => {
@@ -102,11 +192,16 @@ export function useGridEngine(
                 setShiftInfo({ type: shiftType, index, direction });
 
                 setTimeout(() => {
-                    setGridImages((curr) =>
-                        shiftType === "row"
-                            ? shiftRow(curr, index, direction, cols)
-                            : shiftCol(curr, index, direction, cols, rows)
-                    );
+                    setGridImages((curr) => {
+                        const { nextGrid, nextPool } = shiftAndReplace(
+                            curr,
+                            shiftType,
+                            index,
+                            direction
+                        );
+                        if (nextPool) setPool(nextPool);
+                        return nextGrid;
+                    });
                     setShiftInfo(null);
                     setMorphInfo(null);
                     setShiftCount((prev) => prev + 1);
@@ -116,7 +211,7 @@ export function useGridEngine(
         }, 4000);
 
         return () => clearInterval(interval);
-    }, [paused, cols, rows]);
+    }, [paused, cols, rows, pool, shiftAndReplace]);
 
     // ── Helper closures exposed to the renderer ─────────────────────────────
 
