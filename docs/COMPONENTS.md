@@ -45,3 +45,16 @@ A custom interactive pointer component that replaces the default system cursor.
 - **Label Readout**: Displays a localized, uppercase action label based on the target element's `data-cursor` attribute:
     - Default: **"VIEW"** (over grid items)
     - Lightbox Backdrop: **"BACK"** (over lightbox overlay)
+
+---
+
+## 🖼️ `PhotoPageClient.tsx` (Photo Details Page)
+
+The immersive full-screen details view for individual photographs.
+
+### Features
+
+- **Immersive Large Frame Layout**: Displays the chosen photograph with maximum visual emphasis, alongside keyboard navigation (`ArrowLeft`/`ArrowRight`/`Escape`) to cycle through the photo pool.
+- **EXIF Specifications Grid**: Renders rich technical details extracted from the photo metadata (Camera model, Lens, Aperture, Shutter Speed, ISO, Focal Length, Exposure Bias, Flash status, Image dimensions, Megapixels, and File size).
+- **Contextual Stories & Location Mapping**: Displays narrative stories and GPS coordinates (Latitude & Longitude) if available, with links to map them.
+- **Admin Management Integration**: Built to work in tandem with the Vercel Blob metadata updates saved via the admin dashboard.
