@@ -50,10 +50,8 @@ export function useGridEngine(
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setGridImages(padImages(initialImages, 12));
         if (initialImages.length <= 12) {
-             
             setPool([]);
         } else {
-             
             setPool(initialImages.slice(12));
         }
     }, [initialImages]);
