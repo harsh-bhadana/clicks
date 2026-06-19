@@ -13,6 +13,11 @@ export interface PhotoMetadata {
     focalLength?: string;
     gpsLatitude?: number;
     gpsLongitude?: number;
+    exposureBias?: string;
+    flash?: string;
+    dimensions?: string;
+    megapixels?: string;
+    fileSize?: string;
 }
 
 export interface GalleryImage {

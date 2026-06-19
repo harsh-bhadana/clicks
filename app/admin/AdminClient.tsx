@@ -73,6 +73,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
     const [formFocalLength, setFormFocalLength] = useState("");
     const [formLatitude, setFormLatitude] = useState<number | undefined>(undefined);
     const [formLongitude, setFormLongitude] = useState<number | undefined>(undefined);
+    const [formExposureBias, setFormExposureBias] = useState("");
+    const [formFlash, setFormFlash] = useState("");
+    const [formDimensions, setFormDimensions] = useState("");
+    const [formMegapixels, setFormMegapixels] = useState("");
+    const [formFileSize, setFormFileSize] = useState("");
     const [shouldCompress, setShouldCompress] = useState(true);
     const [activeTab, setActiveTab] = useState<"general" | "specs" | "location">("general");
     const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -188,6 +193,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
         setFormFocalLength(meta.focalLength || "");
         setFormLatitude(meta.gpsLatitude);
         setFormLongitude(meta.gpsLongitude);
+        setFormExposureBias(meta.exposureBias || "");
+        setFormFlash(meta.flash || "");
+        setFormDimensions(meta.dimensions || "");
+        setFormMegapixels(meta.megapixels || "");
+        setFormFileSize(meta.fileSize || "");
 
         // Smooth scroll to form on mobile devices
         setTimeout(() => {
@@ -254,6 +264,11 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
             focalLength: formFocalLength,
             gpsLatitude: formLatitude,
             gpsLongitude: formLongitude,
+            exposureBias: formExposureBias,
+            flash: formFlash,
+            dimensions: formDimensions,
+            megapixels: formMegapixels,
+            fileSize: formFileSize,
         };
 
         const updatedImages = images.map((img) => {
@@ -269,6 +284,65 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
 
     // Helper: Parse EXIF data client-side using exifr
     const extractFileExif = async (file: File) => {
+        const nameWithoutExt = file.name.split(".").slice(0, -1).join(".");
+        const defaultTitle = nameWithoutExt.replace(/[_-]/g, " ");
+
+        const result = {
+            title: defaultTitle,
+            camera: "",
+            lens: "",
+            aperture: "",
+            shutterSpeed: "",
+            iso: "",
+            focalLength: "",
+            latitude: undefined as number | undefined,
+            longitude: undefined as number | undefined,
+            date: "",
+            exposureBias: "",
+            flash: "",
+            dimensions: "",
+            megapixels: "",
+            fileSize: "",
+            location: "",
+        };
+
+        // Extract file size
+        const bytes = file.size;
+        if (bytes > 0) {
+            const k = 1024;
+            const sizes = ["B", "KB", "MB"];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            const sz = parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+            result.fileSize = sz;
+            setFormFileSize(sz);
+        }
+
+        // Extract dimensions and megapixels asynchronously
+        try {
+            const dimensions = await new Promise<{ width: number; height: number }>(
+                (resolve, reject) => {
+                    const img = new window.Image();
+                    img.src = URL.createObjectURL(file);
+                    img.onload = () => {
+                        URL.revokeObjectURL(img.src);
+                        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+                    };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(img.src);
+                        reject(new Error("Failed to load image for dimensions"));
+                    };
+                }
+            );
+            const dimStr = `${dimensions.width}x${dimensions.height}`;
+            const mpStr = `${Math.round((dimensions.width * dimensions.height) / 1000000)}MP`;
+            result.dimensions = dimStr;
+            result.megapixels = mpStr;
+            setFormDimensions(dimStr);
+            setFormMegapixels(mpStr);
+        } catch (dimErr) {
+            console.warn("Could not read image dimensions:", dimErr);
+        }
+
         try {
             setUploadProgress("Reading EXIF metadata...");
             const data = await exifr.parse(file, {
@@ -282,40 +356,192 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 if (data.Model) {
                     const make = data.Make ? data.Make.trim() : "";
                     const model = data.Model.trim();
-                    setFormCamera(
-                        model.toLowerCase().includes(make.toLowerCase())
-                            ? model
-                            : `${make} ${model}`
-                    );
-                }
-                if (data.LensModel) setFormLens(data.LensModel);
-                if (data.FNumber) setFormAperture(`f/${data.FNumber}`);
-                if (data.ExposureTime) {
-                    const exp = data.ExposureTime;
-                    setFormShutterSpeed(exp < 1 ? `1/${Math.round(1 / exp)}s` : `${exp}s`);
-                }
-                if (data.ISO) setFormIso(String(data.ISO));
-                if (data.FocalLength) setFormFocalLength(`${data.FocalLength}mm`);
-                if (data.latitude !== undefined && data.latitude !== null) {
-                    setFormLatitude(Number(data.latitude));
-                }
-                if (data.longitude !== undefined && data.longitude !== null) {
-                    setFormLongitude(Number(data.longitude));
-                }
-                if (data.DateTimeOriginal) {
-                    const dateObj = new Date(data.DateTimeOriginal);
-                    setFormDate(
-                        dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-                    );
+                    const cameraVal = model.toLowerCase().includes(make.toLowerCase())
+                        ? model
+                        : `${make} ${model}`;
+                    result.camera = cameraVal;
+                    setFormCamera(cameraVal);
+                } else {
+                    setFormCamera("");
                 }
 
-                // Default title
-                const nameWithoutExt = file.name.split(".").slice(0, -1).join(".");
-                setFormTitle(nameWithoutExt.replace(/[_-]/g, " "));
+                if (data.LensModel) {
+                    result.lens = data.LensModel;
+                    setFormLens(data.LensModel);
+                } else {
+                    setFormLens("");
+                }
+
+                if (data.FNumber) {
+                    const ap = `f/${data.FNumber}`;
+                    result.aperture = ap;
+                    setFormAperture(ap);
+                } else {
+                    setFormAperture("");
+                }
+
+                if (data.ExposureTime) {
+                    const exp = data.ExposureTime;
+                    const sh = exp < 1 ? `1/${Math.round(1 / exp)}s` : `${exp}s`;
+                    result.shutterSpeed = sh;
+                    setFormShutterSpeed(sh);
+                } else {
+                    setFormShutterSpeed("");
+                }
+
+                if (data.ISO) {
+                    const isoVal = String(data.ISO);
+                    result.iso = isoVal;
+                    setFormIso(isoVal);
+                } else {
+                    setFormIso("");
+                }
+
+                if (data.FocalLength) {
+                    const fl = `${data.FocalLength}mm`;
+                    result.focalLength = fl;
+                    setFormFocalLength(fl);
+                } else {
+                    setFormFocalLength("");
+                }
+
+                if (data.ExposureBiasValue !== undefined && data.ExposureBiasValue !== null) {
+                    const bias = Number(data.ExposureBiasValue);
+                    const biasStr =
+                        bias === 0
+                            ? "0.0ev"
+                            : bias > 0
+                              ? `+${bias.toFixed(1)}ev`
+                              : `${bias.toFixed(1)}ev`;
+                    result.exposureBias = biasStr;
+                    setFormExposureBias(biasStr);
+                } else {
+                    setFormExposureBias("");
+                }
+
+                if (data.Flash !== undefined && data.Flash !== null) {
+                    const flashVal = Number(data.Flash);
+                    const flashStr = (flashVal & 1) === 1 ? "Flash used" : "Flash did not fire";
+                    result.flash = flashStr;
+                    setFormFlash(flashStr);
+                } else {
+                    setFormFlash("");
+                }
+
+                if (data.latitude !== undefined && data.latitude !== null) {
+                    result.latitude = Number(data.latitude);
+                    setFormLatitude(Number(data.latitude));
+                } else {
+                    setFormLatitude(undefined);
+                }
+
+                if (data.longitude !== undefined && data.longitude !== null) {
+                    result.longitude = Number(data.longitude);
+                    setFormLongitude(Number(data.longitude));
+                } else {
+                    setFormLongitude(undefined);
+                }
+
+                if (data.DateTimeOriginal) {
+                    try {
+                        const dateObj = new Date(data.DateTimeOriginal);
+                        if (!isNaN(dateObj.getTime())) {
+                            const dt = dateObj.toLocaleDateString("en-US", {
+                                month: "long",
+                                year: "numeric",
+                            });
+                            result.date = dt;
+                            setFormDate(dt);
+                        } else {
+                            setFormDate("");
+                        }
+                    } catch {
+                        setFormDate("");
+                    }
+                } else {
+                    setFormDate("");
+                }
+
+                // If GPS coordinates exist, perform reverse geocoding to resolve a friendly address
+                if (
+                    data.latitude !== undefined &&
+                    data.latitude !== null &&
+                    data.longitude !== undefined &&
+                    data.longitude !== null
+                ) {
+                    const lat = Number(data.latitude);
+                    const lon = Number(data.longitude);
+                    try {
+                        setUploadProgress("Resolving location details...");
+                        const geoRes = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`,
+                            {
+                                headers: {
+                                    "User-Agent":
+                                        "ClicksGallery/2.0 (contact: harshbhadana40@outlook.com)",
+                                },
+                            }
+                        );
+                        if (geoRes.ok) {
+                            const geoData = await geoRes.json();
+                            if (geoData && geoData.address) {
+                                const addr = geoData.address;
+                                const parts = [];
+                                if (addr.road) parts.push(addr.road);
+                                if (addr.suburb || addr.neighbourhood)
+                                    parts.push(addr.suburb || addr.neighbourhood);
+                                if (addr.village || addr.city_district || addr.subdistrict) {
+                                    parts.push(
+                                        addr.village || addr.city_district || addr.subdistrict
+                                    );
+                                }
+                                if (addr.city || addr.town) parts.push(addr.city || addr.town);
+                                if (addr.state) parts.push(addr.state);
+                                if (addr.postcode) parts.push(addr.postcode);
+                                if (addr.country) parts.push(addr.country);
+
+                                const resolvedLocation = parts.join(", ") || geoData.display_name;
+                                result.location = resolvedLocation;
+                                setFormLocation(resolvedLocation);
+                            }
+                        }
+                    } catch (geoErr) {
+                        console.warn("Reverse geocoding failed:", geoErr);
+                    }
+                }
+
+                setFormTitle(defaultTitle);
+            } else {
+                setFormCamera("");
+                setFormLens("");
+                setFormAperture("");
+                setFormShutterSpeed("");
+                setFormIso("");
+                setFormFocalLength("");
+                setFormExposureBias("");
+                setFormFlash("");
+                setFormLatitude(undefined);
+                setFormLongitude(undefined);
+                setFormDate("");
+                setFormTitle(defaultTitle);
             }
         } catch (err) {
             console.warn("Could not read EXIF:", err);
+            setFormCamera("");
+            setFormLens("");
+            setFormAperture("");
+            setFormShutterSpeed("");
+            setFormIso("");
+            setFormFocalLength("");
+            setFormExposureBias("");
+            setFormFlash("");
+            setFormLatitude(undefined);
+            setFormLongitude(undefined);
+            setFormDate("");
+            setFormTitle(defaultTitle);
         }
+
+        return result;
     };
 
     // File Upload Handler
@@ -328,8 +554,19 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
         setUploading(true);
         setUploadProgress("Analyzing image details & EXIF...");
 
+        // Reset temporary states so we don't carry over location, category, story or palette from previous images
+        setFormLocation("");
+        setFormCategory("Street");
+        setFormStory(customStory || "");
+        setFormPalette(COLOR_PALETTES[0].colors);
+        setFormExposureBias("");
+        setFormFlash("");
+        setFormDimensions("");
+        setFormMegapixels("");
+        setFormFileSize("");
+
         // Extract metadata first from the original file to preserve EXIF data
-        await extractFileExif(file);
+        const exifData = await extractFileExif(file);
 
         let fileToUpload = file;
         if (shouldCompress) {
@@ -362,25 +599,27 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                 id: Math.max(...images.map((i) => i.id), 0) + 1,
                 pathname: data.pathname,
                 metadata: {
-                    title: formTitle || file.name.split(".")[0].replace(/[_-]/g, " "),
-                    location: formLocation || "Unknown Location",
+                    title: exifData.title,
+                    location: exifData.location || "Unknown Location",
                     date:
-                        formDate ||
+                        exifData.date ||
                         new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-                    category: formCategory,
-                    camera: formCamera || "Unknown Camera",
-                    lens: formLens || "Unknown Lens",
-                    aperture: formAperture || "f/2.8",
-                    shutterSpeed: formShutterSpeed || "1/125s",
-                    iso: formIso || "100",
-                    story:
-                        customStory ||
-                        formStory ||
-                        "A new addition to the clicks photography collection.",
-                    colorPalette: formPalette,
-                    focalLength: formFocalLength,
-                    gpsLatitude: formLatitude,
-                    gpsLongitude: formLongitude,
+                    category: "Street",
+                    camera: exifData.camera || "Unknown Camera",
+                    lens: exifData.lens || "Unknown Lens",
+                    aperture: exifData.aperture || "f/2.8",
+                    shutterSpeed: exifData.shutterSpeed || "1/125s",
+                    iso: exifData.iso || "100",
+                    story: customStory || "A new addition to the clicks photography collection.",
+                    colorPalette: COLOR_PALETTES[0].colors,
+                    focalLength: exifData.focalLength || "",
+                    gpsLatitude: exifData.latitude,
+                    gpsLongitude: exifData.longitude,
+                    exposureBias: exifData.exposureBias || "0.0ev",
+                    flash: exifData.flash || "Flash did not fire",
+                    dimensions: exifData.dimensions || "Unknown",
+                    megapixels: exifData.megapixels || "Unknown",
+                    fileSize: exifData.fileSize || "Unknown",
                 },
             };
 
@@ -1065,6 +1304,71 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                                             placeholder="100"
                                             value={formIso}
                                             onChange={(e) => setFormIso(e.target.value)}
+                                            className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase mb-1">
+                                            Exposure Bias
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. -4.0ev"
+                                            value={formExposureBias}
+                                            onChange={(e) => setFormExposureBias(e.target.value)}
+                                            className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase mb-1">
+                                            Flash Status
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Flash used"
+                                            value={formFlash}
+                                            onChange={(e) => setFormFlash(e.target.value)}
+                                            className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase mb-1">
+                                            Dimensions
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 4000x3000"
+                                            value={formDimensions}
+                                            onChange={(e) => setFormDimensions(e.target.value)}
+                                            className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase mb-1">
+                                            Megapixels
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 12MP"
+                                            value={formMegapixels}
+                                            onChange={(e) => setFormMegapixels(e.target.value)}
+                                            className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div className="col-span-1 sm:col-span-2">
+                                        <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase mb-1">
+                                            File Size
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 7.70 MB"
+                                            value={formFileSize}
+                                            onChange={(e) => setFormFileSize(e.target.value)}
                                             className="w-full rounded-xl border border-white/5 bg-neutral-950/80 px-3 py-2.5 text-xs text-white focus:border-purple-500/50 focus:outline-none"
                                         />
                                     </div>

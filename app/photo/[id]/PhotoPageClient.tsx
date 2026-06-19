@@ -17,6 +17,9 @@ import {
     ChevronRight,
     X,
     ExternalLink,
+    Sliders,
+    Zap,
+    Database,
 } from "lucide-react";
 import type { GalleryImage } from "@/app/types";
 
@@ -315,6 +318,57 @@ export default function PhotoPageClient({ image, allImages }: PhotoPageClientPro
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Exposure Bias */}
+                            {metadata.exposureBias && (
+                                <div className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-neutral-900/20 p-3">
+                                    <Sliders className="w-4 h-4 text-purple-400 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-[9px] font-mono text-zinc-500 block uppercase leading-none mb-0.5">
+                                            Exposure Bias
+                                        </span>
+                                        <span className="text-[11px] text-zinc-300 block truncate font-medium">
+                                            {metadata.exposureBias}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Flash */}
+                            {metadata.flash && (
+                                <div className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-neutral-900/20 p-3">
+                                    <Zap className="w-4 h-4 text-purple-400 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-[9px] font-mono text-zinc-500 block uppercase leading-none mb-0.5">
+                                            Flash
+                                        </span>
+                                        <span className="text-[11px] text-zinc-300 block truncate font-medium">
+                                            {metadata.flash}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* File Details */}
+                            {(metadata.fileSize || metadata.dimensions || metadata.megapixels) && (
+                                <div className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-neutral-900/20 p-3 col-span-2">
+                                    <Database className="w-4 h-4 text-purple-400 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-[9px] font-mono text-zinc-500 block uppercase leading-none mb-0.5">
+                                            File details
+                                        </span>
+                                        <span className="text-[11px] text-zinc-300 block truncate font-medium">
+                                            {[
+                                                metadata.fileSize,
+                                                metadata.dimensions,
+                                                metadata.megapixels,
+                                            ]
+                                                .filter(Boolean)
+                                                .join("  |  ")}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
