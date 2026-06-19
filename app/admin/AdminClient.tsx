@@ -18,6 +18,8 @@ import {
     RefreshCw,
     CheckCircle,
     AlertCircle,
+    X,
+    ImageIcon,
 } from "lucide-react";
 import exifr from "exifr";
 import type { GalleryImage, PhotoMetadata } from "../types";
@@ -76,14 +78,26 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [pendingStory, setPendingStory] = useState("");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [pendingDimensions, setPendingDimensions] = useState<{
+        width: number;
+        height: number;
+    } | null>(null);
 
     useEffect(() => {
         if (!pendingFile) {
             setPreviewUrl(null);
+            setPendingDimensions(null);
             return;
         }
         const url = URL.createObjectURL(pendingFile);
         setPreviewUrl(url);
+
+        const img = new window.Image();
+        img.src = url;
+        img.onload = () => {
+            setPendingDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+        };
+
         return () => {
             URL.revokeObjectURL(url);
         };
@@ -626,119 +640,183 @@ export default function AdminClient({ initialImages }: AdminClientProps) {
                         </h2>
 
                         {!pendingFile ? (
-                            <div
-                                onDragEnter={handleDrag}
-                                onDragLeave={handleDrag}
-                                onDragOver={handleDrag}
-                                onDrop={handleDrop}
-                                className={`relative h-56 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 ${
-                                    dragActive
-                                        ? "border-purple-500/50 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
-                                        : "bg-neutral-950/40 hover:border-white/20 hover:bg-neutral-950/60"
-                                } ${uploading ? "pointer-events-none opacity-50" : ""}`}
-                            >
-                                <input
-                                    type="file"
-                                    id="file-upload"
-                                    accept="image/*"
-                                    onChange={handleFileInput}
-                                    className="hidden"
-                                />
-                                <label
-                                    htmlFor="file-upload"
-                                    className="cursor-pointer w-full h-full flex flex-col items-center justify-center"
+                            <div className="space-y-5">
+                                <div
+                                    onDragEnter={handleDrag}
+                                    onDragLeave={handleDrag}
+                                    onDragOver={handleDrag}
+                                    onDrop={handleDrop}
+                                    className={`relative h-56 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 ${
+                                        dragActive
+                                            ? "border-purple-500/50 bg-purple-500/5 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+                                            : "bg-neutral-950/40 hover:border-white/20 hover:bg-neutral-950/60"
+                                    } ${uploading ? "pointer-events-none opacity-50" : ""}`}
                                 >
-                                    <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 mb-3 border border-white/5 shadow-inner transition-transform group-hover:scale-105">
-                                        {uploading ? (
-                                            <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
-                                        ) : (
-                                            <UploadCloud className="h-5 w-5 text-purple-400" />
-                                        )}
-                                    </div>
-                                    <p className="text-xs font-bold text-white uppercase tracking-widest">
-                                        {uploading ? "Optimizing Click..." : "Drop photo here"}
-                                    </p>
-                                    <p className="text-[9px] text-zinc-500 mt-1 font-mono uppercase tracking-widest">
-                                        or click to browse files
-                                    </p>
-                                </label>
-
-                                {uploading && (
-                                    <div className="absolute inset-0 bg-neutral-950/95 rounded-2xl flex flex-col items-center justify-center p-6 backdrop-blur-md">
-                                        <RefreshCw className="h-6 w-6 animate-spin text-purple-400 mb-3" />
-                                        <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
-                                            {uploadProgress}
+                                    <input
+                                        type="file"
+                                        id="file-upload"
+                                        accept="image/*"
+                                        onChange={handleFileInput}
+                                        className="hidden"
+                                    />
+                                    <label
+                                        htmlFor="file-upload"
+                                        className="cursor-pointer w-full h-full flex flex-col items-center justify-center"
+                                    >
+                                        <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-400 mb-3 border border-white/5 shadow-inner transition-transform group-hover:scale-105">
+                                            {uploading ? (
+                                                <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
+                                            ) : (
+                                                <UploadCloud className="h-5 w-5 text-purple-400" />
+                                            )}
+                                        </div>
+                                        <p className="text-xs font-bold text-white uppercase tracking-widest">
+                                            {uploading ? "Optimizing Click..." : "Drop photo here"}
                                         </p>
+                                        <p className="text-[9px] text-zinc-500 mt-1 font-mono uppercase tracking-widest">
+                                            or click to browse files
+                                        </p>
+                                    </label>
+
+                                    {uploading && (
+                                        <div className="absolute inset-0 bg-neutral-950/95 rounded-2xl flex flex-col items-center justify-center p-6 backdrop-blur-md">
+                                            <RefreshCw className="h-6 w-6 animate-spin text-purple-400 mb-3" />
+                                            <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                                                {uploadProgress}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Compression Toggle */}
+                                <div className="border-t border-white/5 pt-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-purple-400">
+                                                <Save className="h-4 w-4" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-[11px] font-bold text-white uppercase tracking-wide">
+                                                    Compress Images
+                                                </h4>
+                                                <p className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest mt-0.5">
+                                                    Reduce file size without losing visual fidelity
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={shouldCompress}
+                                                onChange={(e) =>
+                                                    setShouldCompress(e.target.checked)
+                                                }
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-8 h-4 bg-neutral-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-500 after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600 peer-checked:after:bg-white"></div>
+                                        </label>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-950 shadow-inner">
-                                    {previewUrl && (
-                                        <Image
-                                            src={previewUrl}
-                                            alt="Staged Preview"
-                                            fill
-                                            className="object-cover"
-                                            unoptimized
-                                        />
-                                    )}
-                                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-full text-[9px] font-mono text-zinc-300 uppercase tracking-wider">
-                                        Staged Image
+                                <div className="bg-neutral-950/40 rounded-2xl p-4 border border-white/5 space-y-4">
+                                    <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                                        <div className="flex items-center gap-2">
+                                            <ImageIcon className="h-4 w-4 text-purple-400 shrink-0" />
+                                            <span className="text-[10px] font-mono text-zinc-300 truncate max-w-[200px] sm:max-w-xs">
+                                                {pendingFile.name}
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setPendingFile(null);
+                                                setPendingStory("");
+                                            }}
+                                            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-lg hover:bg-white/5 cursor-pointer"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        {/* Left: 16:9 Image Preview */}
+                                        <div className="w-full md:w-1/2 space-y-2">
+                                            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-neutral-950 shadow-inner group">
+                                                {previewUrl && (
+                                                    <Image
+                                                        src={previewUrl}
+                                                        alt="Staged Preview"
+                                                        fill
+                                                        className="object-cover transition-transform duration-500 group-hover:scale-102"
+                                                        unoptimized
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between text-[9px] font-mono text-zinc-500 uppercase tracking-widest px-1">
+                                                <span>
+                                                    {pendingDimensions
+                                                        ? `${pendingDimensions.width} × ${pendingDimensions.height} px`
+                                                        : "Loading dimensions..."}
+                                                </span>
+                                                <span>
+                                                    {(() => {
+                                                        const bytes = pendingFile.size;
+                                                        if (bytes === 0) return "0 B";
+                                                        const k = 1024;
+                                                        const sizes = ["B", "KB", "MB"];
+                                                        const i = Math.floor(
+                                                            Math.log(bytes) / Math.log(k)
+                                                        );
+                                                        return (
+                                                            parseFloat(
+                                                                (bytes / Math.pow(k, i)).toFixed(1)
+                                                            ) +
+                                                            " " +
+                                                            sizes[i]
+                                                        );
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Add Description */}
+                                        <div className="w-full md:w-1/2 flex flex-col space-y-1.5">
+                                            <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase">
+                                                Description / Story
+                                            </label>
+                                            <textarea
+                                                value={pendingStory}
+                                                onChange={(e) => setPendingStory(e.target.value)}
+                                                placeholder="Write the story behind this click..."
+                                                rows={4}
+                                                maxLength={240}
+                                                className="w-full flex-grow p-3 rounded-xl border border-white/10 bg-neutral-950/80 text-xs text-white placeholder-neutral-600 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all font-sans leading-relaxed resize-none"
+                                            />
+                                            <div className="flex justify-end">
+                                                <span className="text-[9px] font-mono text-zinc-500">
+                                                    {pendingStory.length}/240 characters
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-1.5">
-                                    <label className="block text-[9px] font-mono tracking-wider text-neutral-400 uppercase">
-                                        Add Description / Story
-                                    </label>
-                                    <textarea
-                                        value={pendingStory}
-                                        onChange={(e) => setPendingStory(e.target.value)}
-                                        placeholder="Write the story behind this click..."
-                                        rows={4}
-                                        className="w-full p-3 rounded-xl border border-white/10 bg-neutral-950/80 text-xs text-white placeholder-neutral-600 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all font-sans leading-relaxed resize-none"
-                                    />
-                                </div>
-
-                                <div className="flex gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setPendingFile(null);
-                                            setPendingStory("");
-                                        }}
-                                        className="flex-1 h-9 rounded-xl border border-white/10 bg-zinc-900/50 hover:bg-zinc-800 text-[10px] font-mono uppercase tracking-wider text-zinc-400 hover:text-white transition-all cursor-pointer"
-                                    >
-                                        Cancel
-                                    </button>
+                                {/* Primary Upload Action Button */}
+                                <div className="pt-2">
                                     <button
                                         type="button"
                                         onClick={triggerPendingUpload}
-                                        className="flex-1 h-9 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-98 text-[10px] font-bold text-white uppercase tracking-wider font-mono transition-all cursor-pointer shadow-lg shadow-purple-950/20"
+                                        className="w-full bg-purple-600 hover:bg-purple-500 active:scale-98 text-xs font-bold text-white py-3 rounded-xl shadow-lg shadow-purple-950/20 transition-all flex items-center justify-center gap-2 font-mono uppercase tracking-wider cursor-pointer"
                                     >
-                                        Upload & Publish
+                                        <UploadCloud
+                                            className="h-4 w-4"
+                                            style={{ strokeWidth: 2.5 }}
+                                        />
+                                        Upload Assets
                                     </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Image compression toggle */}
-                        {!pendingFile && (
-                            <div className="mt-5 flex items-center justify-between px-2 pt-3 border-t border-white/5">
-                                <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
-                                    Web-Optimized (Client Compress)
-                                </span>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={shouldCompress}
-                                        onChange={(e) => setShouldCompress(e.target.checked)}
-                                        className="sr-only peer"
-                                    />
-                                    <div className="w-8 h-4 bg-neutral-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-500 after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600 peer-checked:after:bg-white"></div>
-                                </label>
                             </div>
                         )}
                     </div>
