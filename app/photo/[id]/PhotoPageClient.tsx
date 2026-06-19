@@ -92,16 +92,6 @@ export default function PhotoPageClient({ image, allImages }: PhotoPageClientPro
 
             {/* Left Side: Photo Showcase */}
             <div className="flex-1 lg:h-screen lg:sticky lg:top-0 bg-black flex items-center justify-center p-4 md:p-8 lg:p-12 relative overflow-hidden group">
-                {/* Background ambient glow based on image palette */}
-                <div
-                    className="absolute inset-0 opacity-10 blur-[150px] transition-all duration-1000 scale-125 pointer-events-none"
-                    style={{
-                        background: metadata.colorPalette
-                            ? `radial-gradient(circle, ${metadata.colorPalette[0]} 0%, transparent 70%)`
-                            : "none",
-                    }}
-                />
-
                 {/* Floating controls inside image area (Desktop) */}
                 <button
                     onClick={handleClose}
@@ -216,25 +206,6 @@ export default function PhotoPageClient({ image, allImages }: PhotoPageClientPro
                             <p className="text-zinc-300 text-xs leading-relaxed font-light">
                                 {metadata.story}
                             </p>
-                        </div>
-                    )}
-
-                    {/* Color Swatch */}
-                    {metadata.colorPalette && metadata.colorPalette.length > 0 && (
-                        <div className="space-y-2.5">
-                            <h3 className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase">
-                                Palette Swatch Scheme
-                            </h3>
-                            <div className="flex gap-1.5 w-full h-8 rounded-xl overflow-hidden border border-white/5 bg-zinc-900/20 p-1">
-                                {metadata.colorPalette.map((color, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex-1 rounded-md transition-all hover:flex-[1.5] cursor-pointer"
-                                        style={{ backgroundColor: color }}
-                                        title={color}
-                                    />
-                                ))}
-                            </div>
                         </div>
                     )}
 
