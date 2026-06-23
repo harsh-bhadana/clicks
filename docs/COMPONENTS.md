@@ -129,4 +129,4 @@ The central administrative interface (`/admin`) for gallery content management.
     - _General_: Edits title, photographer notes/stories, shooting date, and tags.
     - _Specs_: Edits aperture, shutter speed, ISO, focal length, lens, camera body, megapixels, dimensions, and file size.
     - _Location_: Inputs geographic names alongside numeric coordinates.
-- **Automated Dropzone**: Includes file uploading via drop and click actions, feeding new uploads through compression pipelines and extracting EXIF headers before saving..
+- **Automated Dropzone**: Includes file uploading via drop and click actions, feeding new uploads through compression pipelines and extracting EXIF headers before saving.
